@@ -1,5 +1,6 @@
 #pragma once
 float maxScaleX();
+float maxScaleY();
 void mathAxis(float maxScaleX=1.1f);
 void mathPoint(float x, float y);
 void mathCircle(float x, float y, float r);

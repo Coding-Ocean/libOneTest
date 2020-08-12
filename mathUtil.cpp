@@ -6,6 +6,9 @@ static float MaxScaleX = 0;
 float maxScaleX() {
     return MaxScaleX;
 }
+float maxScaleY() {
+    return Cy / Unit;
+}
 void mathAxis(float maxScaleX) {
     Cx = Width / 2;
     Cy = Height / 2;
@@ -15,71 +18,46 @@ void mathAxis(float maxScaleX) {
     stroke(0, 0, 0);
     line(0, Cy, Width, Cy);
     line(Cx, 0, Cx, Height);
-
+    //scale x y
     int ofst[3][4] = {
-        15,25,35,45,//>100
-        10,20,25,35,//>10
-        5,15,15,25
+        15,25,35,45,//MaxScaleX>=100
+        10,20,25,35,//MaxScaleX>=10
+        5,15,15,25//MaxScaleX<10;
     };
     float l = 5;
-    if (MaxScaleX > 1000) {
+    int inc = 0;
+    int idx = 0;
+    if (MaxScaleX >= 1000) {
     }
-    else if (MaxScaleX > 100) {
-        for (int i = 100; i < Cx / Unit; i+=100) {
-            float sx = Unit * i;
-            line(Cx + sx, Cy - l, Cx + sx, Cy + l);//x>0
-            line(Cx - sx, Cy - l, Cx - sx, Cy + l);//x<0
-            text(i, Cx + sx - 15, Cy + 25);
-            text(-i, Cx - sx - 25, Cy + 25);
-        }
-        //scale y
-        for (int i = 100; i < Cy / Unit; i+=100) {
-            float sy = Unit * i;
-            line(Cx - l, Cy - sy, Cx + l, Cy - sy);//y>0
-            line(Cx - l, Cy + sy, Cx + l, Cy + sy);//y<0
-            text(i, Cx - 35, Cy - sy + 10);
-            text(-i, Cx - 45, Cy + sy + 10);
-        }
+    else if (MaxScaleX >= 100) {
+        idx = 0; inc = 100;
     }
-    else if (MaxScaleX > 10) {
-        fill(0, 0, 0);
-        //scale x
-        for (int i = 10; i < Cx / Unit; i+=10) {
-            float sx = Unit * i;
-            line(Cx + sx, Cy - l, Cx + sx, Cy + l);//x>0
-            line(Cx - sx, Cy - l, Cx - sx, Cy + l);//x<0
-            text(i, Cx + sx - 10, Cy + 25);
-            text(-i, Cx - sx - 20, Cy + 25);
-        }
-        //scale y
-        for (int i = 10; i < Cy / Unit; i+=10) {
-            float sy = Unit * i;
-            line(Cx - l, Cy - sy, Cx + l, Cy - sy);//y>0
-            line(Cx - l, Cy + sy, Cx + l, Cy + sy);//y<0
-            text(i, Cx - 25, Cy - sy + 10);
-            text(-i, Cx - 35, Cy + sy + 10);
-        }
+    else if (MaxScaleX >= 10) {
+        idx = 1; inc = 10;
     }
     else {
-        fill(0, 0, 0);
+        idx = 2; inc = 1;
+    }
+    fill(0, 0, 0);
+    if (MaxScaleX < 1000) {
         //scale x
-        for (int i = 1; i < Cx / Unit; i++) {
+        for (int i = inc; i < Cx / Unit; i += inc) {
             float sx = Unit * i;
             line(Cx + sx, Cy - l, Cx + sx, Cy + l);//x>0
             line(Cx - sx, Cy - l, Cx - sx, Cy + l);//x<0
-            text(i, Cx + sx - 5, Cy + 25);
-            text(-i, Cx - sx - 15, Cy + 25);
+            text(i, Cx + sx - ofst[idx][0], Cy + 25);
+            text(-i, Cx - sx - ofst[idx][1], Cy + 25);
         }
         //scale y
-        for (int i = 1; i < Cy / Unit; i++) {
+        for (int i = inc; i < Cy / Unit; i += inc) {
             float sy = Unit * i;
             line(Cx - l, Cy - sy, Cx + l, Cy - sy);//y>0
             line(Cx - l, Cy + sy, Cx + l, Cy + sy);//y<0
-            text(i, Cx - 15, Cy - sy + 10);
-            text(-i, Cx - 25, Cy + sy + 10);
+            text(i, Cx - ofst[idx][2], Cy - sy + 10);
+            text(-i, Cx - ofst[idx][3], Cy + sy + 10);
         }
     }
-    text(0, Cx - 15, Cy + 25);
+    text("0", Cx - 15, Cy + 25);
 }
 void mathPoint(float x, float y) {
     point(Cx + x * Unit, Cy - y * Unit);

@@ -1,14 +1,15 @@
 #define C
+
 #ifdef C
 #include<cmath>
 #include"framework.h"
 #include"window.h"
 #include"graphic.h"
 #include"mathUtil.h"
-float PointStrokeWeight = 0;
-float LineStrokeWeight = 3;
+float PointStrokeWeight = 6;
+float LineStrokeWeight = 0;
 float f(float x) {
-    return x*x;
+    return x*x*x;
 }
 void regularPolygon(int num) {
     static float r = 0.0f;//radian for animation
@@ -61,7 +62,7 @@ void animation(int img) {
         px = -maxScaleX();
     }
     float py = f(px);
-    stroke(255, 0, 0);
+    stroke(190, 190, 190);
     strokeWeight(LineStrokeWeight);
     mathLine(px, 0, px, py);
     mathLine(0, py, px, py);
@@ -89,47 +90,92 @@ void gmain() {
         cutImage(_img, 32, 0, 32, 32) 
     };
     unsigned ac = 0;
-    float scale = 400.0f;
+    float scale = 4.1f;
+    float x, y;
 
+    struct DATA {
+        int flag = 0;
+        float px = 0;
+        float py = 0;
+        float dx = 0;
+        float dy = 0;
+    };
+    DATA blt[50];
+    unsigned cnt = 0;
     repeat() {
-        clear(220, 220, 220);
+        clear(210, 200, 200);
+        line(0, 0, 0, Height);
+        line(0, 0, Width, 0);
+        line(Width, 0, Width, Height);
+        line(0, Height, Width, Height);
         //mathAxis(changeMaxX());
-        mathAxis();
+        mathAxis(scale);
         //scale += 0.01f*maxScaleX();
         //regularPolygon(6);
         graph();
         animation(img[0]);
 
-        float x = 0.5f;
-        float y = f(x);
-        stroke(0, 0, 0);
-        strokeWeight(8);
-        mathPoint(x, y);
-        stroke(190, 190, 190);
-        strokeWeight(2);
-        mathLine(x, 0, x, y);
-        mathLine(0, y, x, y);
-
+        //三角関数
         x = cos(r);
         y = sin(r);
         r += 0.01f;
+        if (r > 3.141592f * 2)r -= 3.141592f * 2;
+
         stroke(0, 0, 0);
         strokeWeight(1);
         fill(255, 255, 0);
         mathCircle(x, y, 10);
-
         rectMode(CENTER);
-        mathImage(img[++ac/60%2], x, y-0.01f);
-        
-        stroke(190, 190, 190);
+        mathImage(img[0], x, y-0.01f);
+        stroke(170, 170, 170);
         strokeWeight(2);
         mathLine(x, 0, x, y);
-        mathLine(0, y, x, y);
-        //r = 3.141592 / 180 * d;
-        //d = r / 3.141592 / 180;
+        mathLine(0, 0, x, y);
+
+        x *= 2;
+        y *= 2;
+        stroke(0, 0, 0);
+        strokeWeight(1);
+        fill(255, 255, 0);
+        mathCircle(x, y, 10);
+        rectMode(CENTER);
+        mathImage(img[0], x, y - 0.01f);
+        stroke(170, 170, 170);
+        strokeWeight(2);
+        mathLine(x, 0, x, y);
+        mathLine(0, 0, x, y);
+
+        //一発選んで発射準備
+        if (++cnt % 10 == 0) {
+            cnt = 0;
+            for (int i = 0; i < 50; i++) {
+                if (blt[i].flag == 0) {
+                    blt[i].flag = 1;
+                    blt[i].px = x;
+                    blt[i].py = y;
+                    blt[i].dx = x * 0.02f * maxScaleX();
+                    blt[i].dy = y * 0.02f * maxScaleX();
+                    break;
+                }
+            }
+        }
+        //発射済みの弾を移動。ウィンドウの外に出たら消す。
+        for (int i = 0; i < 50; i++) {
+            if (blt[i].flag) {
+                blt[i].px += blt[i].dx;
+                blt[i].py += blt[i].dy;
+                if (blt[i].px < -maxScaleX() || blt[i].px > maxScaleX() ||
+                    blt[i].py > maxScaleY() || blt[i].py < -maxScaleY()) {
+                    blt[i].flag = 0;
+                }
+                mathImage(img[0], blt[i].px, blt[i].py);
+                strokeWeight(4);
+                mathLine(blt[i].px, blt[i].py, blt[i].px + blt[i].dx * 20, blt[i].py + blt[i].dy * 20);
+            }
+        }
+        
         fill(0, 0, 0);
-        text( r * 180.0f / 3.141592f, 0, 20);
-        if (r > 3.141592f * 2)r -= 3.141592f * 2;
+        text(r , 0, 20);
     }
 }
 

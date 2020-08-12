@@ -1,4 +1,141 @@
-#define B
+#define C
+#ifdef C
+#include<cmath>
+#include"framework.h"
+#include"window.h"
+#include"graphic.h"
+#include"mathUtil.h"
+float PointStrokeWeight = 0;
+float LineStrokeWeight = 3;
+float f(float x) {
+    return x*x;
+}
+void regularPolygon(int num) {
+    static float r = 0.0f;//radian for animation
+    float radius = sin(r);
+    r += 0.01f;
+    float rad = 3.141592f * 2 / num;
+    float sx = 1.0f * radius, sy = 0.0f, ex, ey;
+    for (int i = 1; i <= num; i++) {
+        ex = cos(rad * i) * radius;
+        ey = sin(rad * i) * radius;
+        stroke(0, 200, 0);
+        strokeWeight(PointStrokeWeight);
+        mathPoint(sx, sy);
+        strokeWeight(LineStrokeWeight);
+        mathLine(sx, sy, ex, ey);
+        sx = ex;
+        sy = ey;
+    }
+}
+void graph() {
+    //Graph
+    float inc = 0.025f * maxScaleX();//ポイントとポイントの間隔
+    float x, y, ex, ey;
+    stroke(0, 0, 255);
+    for (x = 0; x < maxScaleX(); x += inc) {
+        //ｘ＝０に必ずポイントを描画するため左右を分けている
+        //ｘ＞０
+        y = f(x);
+        strokeWeight(PointStrokeWeight);
+        mathPoint(x, y);
+        ex = x + inc;
+        ey = f(ex);
+        strokeWeight(LineStrokeWeight);
+        mathLine(x, y, ex, ey);
+        //ｘ＜０
+        y = f(-x);
+        strokeWeight(PointStrokeWeight);
+        mathPoint(-x, y);
+        ex = -x - inc;
+        ey = f(ex);
+        strokeWeight(LineStrokeWeight);
+        mathLine(-x, y, ex, ey);
+    }
+}
+void animation(int img) {
+    static float px = maxScaleX();
+    float speed = 0.01f * maxScaleX();
+    px += speed;
+    if (px > maxScaleX()) {
+        px = -maxScaleX();
+    }
+    float py = f(px);
+    stroke(255, 0, 0);
+    strokeWeight(LineStrokeWeight);
+    mathLine(px, 0, px, py);
+    mathLine(0, py, px, py);
+    stroke(255, 255, 0);
+    //必ずポイントを描く
+    strokeWeight(10);
+    mathPoint(px, py);
+    rectMode(CENTER);
+    static unsigned ac = 0;
+    mathImage(img, px, py);
+}
+float changeMaxX() {
+    static float ar = 0.0f;
+    float maxScaleX = (cos(ar) * 0.5f + 0.5f) * 5.14f + 1.1f;
+    ar += 0.002f;
+    return maxScaleX;
+}
+
+void gmain() {
+    window(800, 800);
+    float r = 0;
+    int _img = loadImage("obake3.png");
+    int img[2] = { 
+        cutImage(_img, 0, 0, 32, 32),
+        cutImage(_img, 32, 0, 32, 32) 
+    };
+    unsigned ac = 0;
+    float scale = 400.0f;
+
+    repeat() {
+        clear(220, 220, 220);
+        //mathAxis(changeMaxX());
+        mathAxis();
+        //scale += 0.01f*maxScaleX();
+        //regularPolygon(6);
+        graph();
+        animation(img[0]);
+
+        float x = 0.5f;
+        float y = f(x);
+        stroke(0, 0, 0);
+        strokeWeight(8);
+        mathPoint(x, y);
+        stroke(190, 190, 190);
+        strokeWeight(2);
+        mathLine(x, 0, x, y);
+        mathLine(0, y, x, y);
+
+        x = cos(r);
+        y = sin(r);
+        r += 0.01f;
+        stroke(0, 0, 0);
+        strokeWeight(1);
+        fill(255, 255, 0);
+        mathCircle(x, y, 10);
+
+        rectMode(CENTER);
+        mathImage(img[++ac/60%2], x, y-0.01f);
+        
+        stroke(190, 190, 190);
+        strokeWeight(2);
+        mathLine(x, 0, x, y);
+        mathLine(0, y, x, y);
+        //r = 3.141592 / 180 * d;
+        //d = r / 3.141592 / 180;
+        fill(0, 0, 0);
+        text( r * 180.0f / 3.141592f, 0, 20);
+        if (r > 3.141592f * 2)r -= 3.141592f * 2;
+    }
+}
+
+
+#endif
+
 #ifdef B
 #include"framework.h"
 #include"window.h"

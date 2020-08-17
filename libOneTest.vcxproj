@@ -152,16 +152,12 @@
   </ItemDefinitionGroup>
   <ItemGroup>
     <ClCompile Include="libOneTest.cpp" />
-    <ClCompile Include="mathUtil.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ResourceCompile Include="resource.rc" />
   </ItemGroup>
   <ItemGroup>
     <None Include="cpp.hint" />
-  </ItemGroup>
-  <ItemGroup>
-    <ClInclude Include="mathUtil.h" />
   </ItemGroup>
   <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
   <ImportGroup Label="ExtensionTargets">

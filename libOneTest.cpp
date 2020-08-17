@@ -1,17 +1,124 @@
-#define C
-
-#ifdef C
-#include<cmath>
+#define F
+#ifdef F
 #include"framework.h"
 #include"window.h"
 #include"graphic.h"
 #include"mathUtil.h"
-float PointStrokeWeight = 6;
+#include"input.h"
+void gmain()
+{
+    window(1600, 900, full);
+    float rad = 0;
+    font("HG明朝E");
+    while (notQuit) {
+        clear(250, 200, 0);
+        rad += 0.0025f;
+        strokeWeight(0);
+        for (int j = 0; j < 9; j++) {
+            for (int i = 0; i < 16; i++) {
+                if ((j + i) % 2 == 0) {
+                    fill(0, 120, 0);
+                }
+                else {
+                    fill(0, 0, 0);
+                }
+                rect(100 * i, 100 * j, 100, 100, rad);
+            }
+        }
+        float x = Width / 2, y = Height / 2;
+        fill(250, 250, 250);
+        strokeWeight(40);
+        stroke(255, 0, 0);
+        circle(x, y, 400);
+
+        textSize(140);
+        fill(100, 100, 100);
+        text("鬼滅の", x - 195, y+5);
+        text("命令書", x - 195, y + 145);
+        fill(0, 0, 0);
+        text("鬼滅の", x-200, y);
+        text("命令書", x-200, y+140);
+    }
+}
+#endif
+
+
+
+
+
+
+
+
+#ifdef E
+#include"framework.h"
+#include"window.h"
+#include"graphic.h"
+#include"mathUtil.h"
+#include"input.h"
+void gmain() {
+    window(800, 800);
+    repeat{
+        clear(200, 200, 200);
+        //stroke(255, 0, 0);
+        strokeWeight(30);
+        line(50, 50, 720, 720);
+        fill(0, 200, 0);
+        rectMode(CENTER);
+        rect(200, 200, 200, 200);
+        fill(200, 200, 0);
+        circle(600, 600, 100 * 2);
+    }
+}
+#endif
+#ifdef D
+#include"framework.h"
+#include"window.h"
+#include"graphic.h"
+#include"mathUtil.h"
+#include"input.h"
+void gmain() {
+    window(800, 800, true);
+    while (notQuit) {
+        getInput();
+
+        clear(50, 50, 50);
+        
+        fill(220, 200, 200);
+        rect(0, 0, Width, Height);
+        
+        mathAxis(1.1f);
+        
+        float mX = MathMouseX;
+        float mY = MathMouseY;
+        fill(255, 255, 255);
+        mathCircle(mX, mY, 0.04f);
+        mathLine(0, 0, mX, mY);
+        mathLine(0, 0, mX, 0);
+        mathLine(mX, 0, mX, mY);
+        mathLine(0, mY, mX, mY);
+        
+        fill(0, 0, 0);
+        text(mX, 0, 20);
+        text(mY, 100, 20);
+        text(sqrt(mX * mX + mY * mY), 200, 20);
+    }
+}
+
+
+#endif
+
+#ifdef C
+#include"framework.h"
+#include"window.h"
+#include"graphic.h"
+#include"mathUtil.h"
+float PointStrokeWeight = 4;
 float LineStrokeWeight = 0;
 float f(float x) {
     return x*x*x;
 }
 void regularPolygon(int num) {
+    angleMode(RADIANS);
     static float r = 0.0f;//radian for animation
     float radius = sin(r);
     r += 0.01f;
@@ -20,7 +127,7 @@ void regularPolygon(int num) {
     for (int i = 1; i <= num; i++) {
         ex = cos(rad * i) * radius;
         ey = sin(rad * i) * radius;
-        stroke(0, 200, 0);
+        stroke(0, 0, 0);
         strokeWeight(PointStrokeWeight);
         mathPoint(sx, sy);
         strokeWeight(LineStrokeWeight);
@@ -33,7 +140,7 @@ void graph() {
     //Graph
     float inc = 0.025f * maxScaleX();//ポイントとポイントの間隔
     float x, y, ex, ey;
-    stroke(0, 0, 255);
+    stroke(255,0,0);
     for (x = 0; x < maxScaleX(); x += inc) {
         //ｘ＝０に必ずポイントを描画するため左右を分けている
         //ｘ＞０
@@ -54,7 +161,7 @@ void graph() {
         mathLine(-x, y, ex, ey);
     }
 }
-void animation(int img) {
+void animation() {
     static float px = maxScaleX();
     float speed = 0.01f * maxScaleX();
     px += speed;
@@ -62,17 +169,33 @@ void animation(int img) {
         px = -maxScaleX();
     }
     float py = f(px);
-    stroke(190, 190, 190);
+    stroke(130, 130, 130);
     strokeWeight(LineStrokeWeight);
     mathLine(px, 0, px, py);
     mathLine(0, py, px, py);
     stroke(255, 255, 0);
-    //必ずポイントを描く
-    strokeWeight(10);
-    mathPoint(px, py);
-    rectMode(CENTER);
-    static unsigned ac = 0;
-    mathImage(img, px, py);
+
+    strokeWeight(1);
+    stroke(0, 0, 0);
+    fill(255, 255, 255);
+    mathCircle(px, py,0.03f);
+}
+void fan(float s, float e, float r) {
+    angleMode(DEGREES);
+    float sx = cos(s) * r;
+    float sy = sin(s) * r;
+    float ex = cos(e) * r;
+    float ey = sin(e) * r;
+    mathLine(0, 0, sx, sy);
+    mathLine(0, 0, ex, ey);
+    float lsx = sx, lsy = sy, lex, ley;
+    for (float deg = s; deg < e; deg += 1) {
+        lex = cos(deg+1) * r;
+        ley = sin(deg+1) * r;
+        mathLine(lsx, lsy, lex, ley);
+        lsx = lex;
+        lsy = ley;
+    }
 }
 float changeMaxX() {
     static float ar = 0.0f;
@@ -80,102 +203,20 @@ float changeMaxX() {
     ar += 0.002f;
     return maxScaleX;
 }
+void back() {
+    fill(255, 200, 200);
+    noStroke();
+    rect(0, 0, Width, Height);
+}
 
 void gmain() {
-    window(800, 800);
-    float r = 0;
-    int _img = loadImage("obake3.png");
-    int img[2] = { 
-        cutImage(_img, 0, 0, 32, 32),
-        cutImage(_img, 32, 0, 32, 32) 
-    };
-    unsigned ac = 0;
-    float scale = 4.1f;
-    float x, y;
-
-    struct DATA {
-        int flag = 0;
-        float px = 0;
-        float py = 0;
-        float dx = 0;
-        float dy = 0;
-    };
-    DATA blt[50];
-    unsigned cnt = 0;
-    repeat() {
-        clear(210, 200, 200);
-        line(0, 0, 0, Height);
-        line(0, 0, Width, 0);
-        line(Width, 0, Width, Height);
-        line(0, Height, Width, Height);
-        //mathAxis(changeMaxX());
-        mathAxis(scale);
-        //scale += 0.01f*maxScaleX();
-        //regularPolygon(6);
+    window(800, 800, full);
+    while(notQuit) {
+        clear(50, 50, 50);
+        back();
+        mathAxis(1.1f);
         graph();
-        animation(img[0]);
-
-        //三角関数
-        x = cos(r);
-        y = sin(r);
-        r += 0.01f;
-        if (r > 3.141592f * 2)r -= 3.141592f * 2;
-
-        stroke(0, 0, 0);
-        strokeWeight(1);
-        fill(255, 255, 0);
-        mathCircle(x, y, 10);
-        rectMode(CENTER);
-        mathImage(img[0], x, y-0.01f);
-        stroke(170, 170, 170);
-        strokeWeight(2);
-        mathLine(x, 0, x, y);
-        mathLine(0, 0, x, y);
-
-        x *= 2;
-        y *= 2;
-        stroke(0, 0, 0);
-        strokeWeight(1);
-        fill(255, 255, 0);
-        mathCircle(x, y, 10);
-        rectMode(CENTER);
-        mathImage(img[0], x, y - 0.01f);
-        stroke(170, 170, 170);
-        strokeWeight(2);
-        mathLine(x, 0, x, y);
-        mathLine(0, 0, x, y);
-
-        //一発選んで発射準備
-        if (++cnt % 10 == 0) {
-            cnt = 0;
-            for (int i = 0; i < 50; i++) {
-                if (blt[i].flag == 0) {
-                    blt[i].flag = 1;
-                    blt[i].px = x;
-                    blt[i].py = y;
-                    blt[i].dx = x * 0.02f * maxScaleX();
-                    blt[i].dy = y * 0.02f * maxScaleX();
-                    break;
-                }
-            }
-        }
-        //発射済みの弾を移動。ウィンドウの外に出たら消す。
-        for (int i = 0; i < 50; i++) {
-            if (blt[i].flag) {
-                blt[i].px += blt[i].dx;
-                blt[i].py += blt[i].dy;
-                if (blt[i].px < -maxScaleX() || blt[i].px > maxScaleX() ||
-                    blt[i].py > maxScaleY() || blt[i].py < -maxScaleY()) {
-                    blt[i].flag = 0;
-                }
-                mathImage(img[0], blt[i].px, blt[i].py);
-                strokeWeight(4);
-                mathLine(blt[i].px, blt[i].py, blt[i].px + blt[i].dx * 20, blt[i].py + blt[i].dy * 20);
-            }
-        }
-        
-        fill(0, 0, 0);
-        text(r , 0, 20);
+        animation();
     }
 }
 
@@ -238,7 +279,7 @@ void gmain() {
     window(1600, 900);
     BALL* a = new BALL(Width / 2+200, Height / 2, 200, 6, -3);
     BALL* b = new BALL(Width / 2-200, Height / 2, 100, -3, 6);
-    repeat() {
+    while(notQuit) {
         a->move();
         b->move();
         a->intersects(b);
@@ -257,12 +298,14 @@ void gmain() {
 #include"framework.h"
 #include"window.h"
 #include"graphic.h"
-void gmain() {
-    window(640, 480, true);
-
+#include"input.h"
+#include"mathUtil.h"
+program{
+    window(1600, 900);
+    //円
     float x = Width / 2, y = Height / 2, r = 10, vx = 5, vy = -3;
-
-    int allImg = loadImage("zenemy.png");
+    //画像
+    int allImg = loadImage("obake2.png");
     int img[4][4];
     for (int j = 0; j < 4; j++) {
         for (int i = 0; i < 4; i++) {
@@ -277,8 +320,10 @@ void gmain() {
     int ac = 0;
     int ptn = 0;
     float px = Width - 16 * 3, py = 16, rz = 0, dx = 0, dy = 3;
+    int logo = loadImage("logo.png");
+    repeat{
+        getInput();
 
-    repeat() {
         x += vx;
         y += vy;
         if (x<r || x>Width - r)vx *= -1;
@@ -313,27 +358,34 @@ void gmain() {
         //px = Width/2;
         //py = Height/2;
 
-        clear(50, 50, 50);
+        clear(250, 180, 0);
         //四角形
-        rectMode(LEFTTOP);
+        angleMode(DEGREES);
+        static float deg = 0.0f;
+        deg += 0.5f;
+        rectMode(CORNER);
         noStroke();
-        float len = 80;
-        for (int j = 0; j < 6; j++) {
-            for (int i = 0; i < 8; i++) {
+        float len = Width / 16;
+        for (int j = 0; j < 9; j++) {
+            for (int i = 0; i < 16; i++) {
                 if ((j + i) % 2) {
                     fill(0, 80, 0);
                 }
                 else {
                     fill(0, 0, 0);
                 }
-                rect(len * i, len * j, len, len);
+                rect(len * i, len * j, len, len, deg);
             }
         }
+        image(logo, Width-220, Height-180);
         //円
         fill(255, 255, 255);
         stroke(250, 0, 0);
-        strokeWeight(2);
-        circle(x, y, r * 2);
+        strokeWeight(20);
+        circle(MouseX, MouseY, 100.0f * 2);
+        fill(0, 0, 0);
+        textSize(80);
+        text("制御文", MouseX-120, MouseY+40);
         //線分１
         strokeWeight(9);
         stroke(255, 255, 0);
@@ -344,19 +396,23 @@ void gmain() {
         line(100, 300, 300, 100);
         //画像
         rectMode(CENTER);
+
         int itvl = 6;//interval
         for (int j = 0; j < 2; j++) {
             for (int i = 0; i < 2; i++) {
-                image(img[ptn][ac / itvl % 4], px + i * 32, py + j * 32);
+                image(img[ptn][ac / itvl % 4], px + i * 32, py + j * 32, deg);
             }
         }
         ++ac %= itvl * 4;
         //テキスト
-        fill(200, 200, 0);
+        fill(200, 200, 200);
         textSize(60);
         text(px, Width / 2 - 150, Height / 2);
         text(py, Width / 2, Height / 2);
-
+        
+        textSize(60);
+        text(MouseX, 0, 60);
+        text(MouseY, 0, 120);
         rz += -0.01f;
     }
 }

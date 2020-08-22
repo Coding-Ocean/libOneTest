@@ -1,22 +1,24 @@
-#define F
+#define A
+
 #ifdef F
 #include"framework.h"
 #include"window.h"
 #include"graphic.h"
 #include"mathUtil.h"
 #include"input.h"
-void gmain()
-{
+void gmain(){
     window(1600, 900, full);
     float rad = 0;
     font("HGñæí©E");
     while (notQuit) {
+        getInput();
         clear(250, 200, 0);
+        //ésèºñÕól
         rad += 0.0025f;
         strokeWeight(0);
         for (int j = 0; j < 9; j++) {
             for (int i = 0; i < 16; i++) {
-                if ((j + i) % 2 == 0) {
+                if ((j + i) % 2 == 1) {
                     fill(0, 120, 0);
                 }
                 else {
@@ -25,29 +27,27 @@ void gmain()
                 rect(100 * i, 100 * j, 100, 100, rad);
             }
         }
-        float x = Width / 2, y = Height / 2;
-        fill(250, 250, 250);
-        strokeWeight(40);
-        stroke(255, 0, 0);
+        //â~
+        //float x = Width / 2, y = Height / 2;
+        float x = MouseX, y = MouseY;
+        strokeWeight(4);
+        stroke(0, 0, 0);
+        fill(250, 0, 0);
         circle(x, y, 400);
-
+        fill(250, 250, 250);
+        circle(x-15, y-5, 370);
+        //ÉeÉLÉXÉg
         textSize(140);
-        fill(100, 100, 100);
-        text("ãSñ≈ÇÃ", x - 195, y+5);
-        text("ñΩóﬂèë", x - 195, y + 145);
+        fill(190, 190, 190);
+        float ofst = 3;
+        text("ãSñ≈ÇÃ", x - 220 - ofst, y - ofst);
+        text("ñΩóﬂèë", x - 220 - ofst, y + 140 - ofst);
         fill(0, 0, 0);
-        text("ãSñ≈ÇÃ", x-200, y);
-        text("ñΩóﬂèë", x-200, y+140);
+        text("ãSñ≈ÇÃ", x - 220, y);
+        text("ñΩóﬂèë", x - 220, y + 140);
     }
 }
 #endif
-
-
-
-
-
-
-
 
 #ifdef E
 #include"framework.h"
@@ -70,6 +70,7 @@ void gmain() {
     }
 }
 #endif
+
 #ifdef D
 #include"framework.h"
 #include"window.h"
@@ -77,7 +78,7 @@ void gmain() {
 #include"mathUtil.h"
 #include"input.h"
 void gmain() {
-    window(800, 800, true);
+    window(800, 800);
     while (notQuit) {
         getInput();
 
@@ -209,9 +210,9 @@ void back() {
     rect(0, 0, Width, Height);
 }
 
-void gmain() {
+program() {
     window(800, 800, full);
-    while(notQuit) {
+    repeat() {
         clear(50, 50, 50);
         back();
         mathAxis(1.1f);
@@ -300,8 +301,10 @@ void gmain() {
 #include"graphic.h"
 #include"input.h"
 #include"mathUtil.h"
-program{
+void gmain(){
     window(1600, 900);
+    //éläpå`
+    float deg = 45;
     //â~
     float x = Width / 2, y = Height / 2, r = 10, vx = 5, vy = -3;
     //âÊëú
@@ -321,7 +324,7 @@ program{
     int ptn = 0;
     float px = Width - 16 * 3, py = 16, rz = 0, dx = 0, dy = 3;
     int logo = loadImage("logo.png");
-    repeat{
+    repeat(){
         getInput();
 
         x += vx;
@@ -358,29 +361,17 @@ program{
         //px = Width/2;
         //py = Height/2;
 
-        clear(250, 180, 0);
+        clear(50, 50, 50);
         //éläpå`
         angleMode(DEGREES);
-        static float deg = 0.0f;
-        deg += 0.5f;
         rectMode(CORNER);
-        noStroke();
-        float len = Width / 16;
-        for (int j = 0; j < 9; j++) {
-            for (int i = 0; i < 16; i++) {
-                if ((j + i) % 2) {
-                    fill(0, 80, 0);
-                }
-                else {
-                    fill(0, 0, 0);
-                }
-                rect(len * i, len * j, len, len, deg);
-            }
-        }
-        image(logo, Width-220, Height-180);
+        fill(0,0, 127);
+        stroke(0, 255, 255);
+        strokeWeight(1);
+        rect(200, 200, 200, 200, deg);
         //â~
         fill(255, 255, 255);
-        stroke(250, 0, 0);
+        stroke(0, 200, 0);
         strokeWeight(20);
         circle(MouseX, MouseY, 100.0f * 2);
         fill(0, 0, 0);
@@ -389,31 +380,32 @@ program{
         //ê¸ï™ÇP
         strokeWeight(9);
         stroke(255, 255, 0);
-        line(60, 60, 340, 140);
+        line(800, 60, 1340, 140);
         //ê¸ï™ÇQ
         strokeWeight(30);
         stroke(255, 0, 0);
-        line(100, 300, 300, 100);
+        line(800, 300, 1300, 100);
         //âÊëú
+        angleMode(RADIANS);
         rectMode(CENTER);
-
+        image(logo, Width-220, Height-180);
         int itvl = 6;//interval
         for (int j = 0; j < 2; j++) {
             for (int i = 0; i < 2; i++) {
-                image(img[ptn][ac / itvl % 4], px + i * 32, py + j * 32, deg);
+                image(img[ptn][ac / itvl % 4], px + i * 32, py + j * 32, rz);
             }
         }
+        rz += -0.01f;
         ++ac %= itvl * 4;
         //ÉeÉLÉXÉg
-        fill(200, 200, 200);
+        fill(220, 220, 220);
         textSize(60);
         text(px, Width / 2 - 150, Height / 2);
         text(py, Width / 2, Height / 2);
-        
-        textSize(60);
         text(MouseX, 0, 60);
         text(MouseY, 0, 120);
-        rz += -0.01f;
+
+
     }
 }
 #endif

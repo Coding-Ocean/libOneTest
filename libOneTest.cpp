@@ -1,4 +1,4 @@
-#define A
+#define B
 
 #ifdef F
 #include"framework.h"
@@ -57,7 +57,7 @@ void gmain(){
 #include"input.h"
 void gmain() {
     window(800, 800);
-    repeat{
+    repeat(){
         clear(200, 200, 200);
         //stroke(255, 0, 0);
         strokeWeight(30);
@@ -109,14 +109,15 @@ void gmain() {
 #endif
 
 #ifdef C
+//関数グラフ
 #include"framework.h"
 #include"window.h"
 #include"graphic.h"
 #include"mathUtil.h"
 float PointStrokeWeight = 4;
-float LineStrokeWeight = 0;
+float LineStrokeWeight = 2;
 float f(float x) {
-    return x*x*x;
+    return x;
 }
 void regularPolygon(int num) {
     angleMode(RADIANS);
@@ -215,7 +216,7 @@ program() {
     repeat() {
         clear(50, 50, 50);
         back();
-        mathAxis(1.1f);
+        mathAxis(3.14f);
         graph();
         animation();
     }
@@ -301,8 +302,10 @@ void gmain() {
 #include"graphic.h"
 #include"input.h"
 #include"mathUtil.h"
+#include"rand.h"
+#include"var.h"
 void gmain(){
-    window(1600, 900);
+    window(1600, 900, full);
     //四角形
     float deg = 45;
     //円
@@ -324,6 +327,10 @@ void gmain(){
     int ptn = 0;
     float px = Width - 16 * 3, py = 16, rz = 0, dx = 0, dy = 3;
     int logo = loadImage("logo.png");
+    setRandSeed();
+    int random[5] = { 0 };
+    float randomf = 0;
+
     repeat(){
         getInput();
 
@@ -395,7 +402,7 @@ void gmain(){
                 image(img[ptn][ac / itvl % 4], px + i * 32, py + j * 32, rz);
             }
         }
-        rz += -0.01f;
+        //rz += -0.01f;
         ++ac %= itvl * 4;
         //テキスト
         fill(220, 220, 220);
@@ -405,7 +412,16 @@ void gmain(){
         text(MouseX, 0, 60);
         text(MouseY, 0, 120);
 
-
+        if (isTrigger(KEY_Z)) { 
+            for (int i = 0; i < 5; i++) {
+                random[i] = getRandInt(9);
+            }
+            randomf = getRandFloat(-5,5);
+        }
+        for (int i = 0; i < 5; i++) {
+            text(random[i], 30.0f*i, 240.0f);
+        }
+        text("実数="+(var)randomf, 0, 300);
     }
 }
 #endif

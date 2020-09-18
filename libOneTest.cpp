@@ -1,4 +1,399 @@
-#define B
+#define I
+#ifdef I
+//じゃんけん
+#include"framework.h"
+#include"window.h"
+#include"graphic.h"
+#include"input.h"
+#include"rand.h"
+#include"mathUtil.h"
+void gmain() {
+    window(1920, 1080, full);
+    //画像読み込み
+    int goriImg = loadImage("gorilla.png");
+    int unchImg = loadImage("unchi.png");
+    //
+    struct DATA {
+        float px;
+        float py;
+        float vx;
+        float vy;
+        int life;
+    };
+    struct DATA gori;
+    gori.px = 960;
+    gori.py = 300;
+    gori.vx = 5;
+    const int numUnch = 100;
+    struct DATA unch[numUnch];
+    for (int i = 0; i < numUnch; i++) {
+        unch[i].life = 0;
+        unch[i].vy = 10;
+    }
+    int triggerCnt = 0;
+    int deg = 0;
+    rectMode(CENTER);
+    angleMode(DEGREES);
+    while (notQuit) {
+        if (isPress(KEY_A)) {
+            gori.px -= gori.vx;
+        }
+        if (isPress(KEY_D)) {
+            gori.px += gori.vx;
+        }
+        deg += 10;
+        gori.px += sin(deg);
+        //雲子発射
+        if (++triggerCnt % 20 == 0) {
+            for (int i = 0; i < numUnch; i++) {
+                if (unch[i].life == 0) {
+                    unch[i].life = 1;
+                    unch[i].px = gori.px + 10;
+                    unch[i].py = gori.py + 100;
+                    triggerCnt = 0;
+                    break;
+                }
+            }
+        }
+        //雲子移動
+        for (int i = 0; i < numUnch; i++) {
+            if (unch[i].life == 1) {
+                unch[i].py += unch[i].vy;
+                if (unch[i].py > 1000) {
+                    unch[i].life = 0;
+                }
+            }
+        }
+        //描画
+        clear(150, 250, 150);
+        for (int i = 0; i < numUnch; i++) {
+            if (unch[i].life == 1) {
+                fill(133, 100, 12);
+                circle(unch[i].px, unch[i].py, 100);
+                //image(unchImg, unch[i].px, unch[i].py, deg);
+            }
+        }
+        image(goriImg, gori.px, gori.py);
+    }
+
+}
+#endif
+
+#ifdef H
+//じゃんけん
+#include"framework.h"
+#include"window.h"
+#include"graphic.h"
+#include"input.h"
+#include"rand.h"
+const int GAME_STATE_INIT = 0;
+const int GAME_STATE_PLAY = 1;
+const int GAME_STATE_RESULT = 2;
+const int GU = 0;
+const int CHOKI = 1;
+const int PA = 2;
+struct DATA {
+    int gameState = GAME_STATE_INIT;
+    //画像読み込み
+    int playerGuImg = 0;
+    int playerChokiImg = 0;
+    int playerPaImg = 0;
+    int pcGuImg = 0;
+    int pcChokiImg = 0;
+    int pcPaImg = 0;
+    int circleImg = 0;
+    int equalImg = 0;
+    int circleSmallImg = 0;
+    //プレイヤーデータ
+    int playerImg = 0;
+    float playerPx = 0;
+    float playerPy = 0;
+    int playerHand = 0;
+    int playerWinCnt = 0;
+    //パソコンデータ
+    int pcImg = 0;
+    float pcPx = 0;
+    float pcPy = 0;
+    int pcHand = 0;
+    int pcWinCnt = 0;
+    //判定結果
+    int playerWinHand = 0;
+    int resultImg = 0;
+    float resultPx = 0;
+    float resultPy = 0;
+    int blinkCnt = 0;
+};
+void draw(struct DATA* data);
+void loadImages(struct DATA* data) {
+    data->playerGuImg = loadImage("playerGu.png");
+    data->playerChokiImg = loadImage("playerChoki.png");
+    data->playerPaImg = loadImage("playerPa.png");
+    data->pcGuImg = loadImage("pcGu.png");
+    data->pcChokiImg = loadImage("pcChoki.png");
+    data->pcPaImg = loadImage("pcPa.png");
+    data->circleImg = loadImage("circle.png");
+    data->equalImg = loadImage("equal.png");
+    data->circleSmallImg = loadImage("circleSmall.png");
+}
+void init(struct DATA* data) {
+    //プレイヤーデータ
+    data->playerImg = data->playerGuImg;
+    data->playerPx = 225;
+    data->playerPy = 225;
+    data->playerHand = GU;
+    data->playerWinCnt = 0;
+    //パソコンデータ
+    data->pcImg = data->pcGuImg;
+    data->pcPx = 800 - 225;
+    data->pcPy = 225;
+    data->pcHand = GU;
+    data->pcWinCnt = 0;
+    //判定結果
+    data->playerWinHand = 0;
+    data->resultImg = data->equalImg;
+    data->resultPx = -200;
+    data->resultPy = 225;
+    data->blinkCnt = 0;
+    rectMode(CENTER);
+    data->gameState = GAME_STATE_PLAY;
+}
+void playerHand(struct DATA* data) {
+    //プレイヤーの手を決定
+    if (isTrigger(KEY_A)) {
+        data->playerImg = data->playerGuImg;
+        data->playerHand = GU;
+    }
+    else if (isTrigger(KEY_S)) {
+        data->playerImg = data->playerChokiImg;
+        data->playerHand = CHOKI;
+    }
+    else if (isTrigger(KEY_D)) {
+        data->playerImg = data->playerPaImg;
+        data->playerHand = PA;
+    }
+}
+void pcHand(struct DATA* data) {
+    //パソコンの手を決定
+    data->pcHand = getRand() % 3;
+    if (data->pcHand == GU) {
+        data->pcImg = data->pcGuImg;
+        data->playerWinHand = PA;//playerが勝つ手を書き込んでおく
+    }
+    else if (data->pcHand == CHOKI) {
+        data->pcImg = data->pcChokiImg;
+        data->playerWinHand = GU;
+    }
+    else if (data->pcHand == PA) {
+        data->pcImg = data->pcPaImg;
+        data->playerWinHand = CHOKI;
+    }
+}
+void judge(struct DATA* data) {
+    //結果判定
+    if (data->playerHand == data->pcHand) {
+        data->resultImg = data->equalImg;
+        data->resultPx = 400;
+    }
+    else if (data->playerHand == data->playerWinHand) {
+        data->resultImg = data->circleImg;
+        data->resultPx = data->playerPx;
+        data->playerWinCnt++;
+    }
+    else {
+        data->resultImg = data->circleImg;
+        data->resultPx = data->pcPx;
+        data->pcWinCnt++;
+    }
+    if (data->playerWinCnt >= 5 || data->pcWinCnt >= 5) {
+        data->gameState = GAME_STATE_RESULT;
+    }
+}
+void play(struct DATA* data) {
+    if (isTrigger(KEY_A) || isTrigger(KEY_S) || isTrigger(KEY_D)) {
+        playerHand(data);
+        pcHand(data);
+        judge(data);
+    }
+    draw(data);
+}
+
+void result(struct DATA* data) {
+    //試合終了
+    data->blinkCnt++;
+    //もう一回
+    if (isTrigger(KEY_SPACE)) {
+        data->gameState = GAME_STATE_INIT;
+    }
+    draw(data);
+}
+
+void draw(struct DATA* data) {
+    //描画
+    clear(30, 60, 120);
+    image(data->playerImg, data->playerPx, data->playerPy);
+    image(data->pcImg, data->pcPx, data->pcPy);
+    if (data->blinkCnt / 10 % 2 == 0) {
+        image(data->resultImg, data->resultPx, data->resultPy);
+    }
+    for (int i = 0; i < data->playerWinCnt; i++) {
+        image(data->circleSmallImg, data->playerPx - 80 + 40 * i, 100);
+    }
+    for (int i = 0; i < data->pcWinCnt; i++) {
+        image(data->circleSmallImg, data->pcPx - 80 + 40 * i, 100);
+    }
+    if (data->gameState != GAME_STATE_RESULT) {
+        text("ぐぅ→Ａ　ちょき→Ｓ　ぱぁ→Ｄ", 80, 360);
+    }
+    else {
+        text("もう一回する→スペース", 120, 360);
+    }
+}
+
+void gmain() {
+    window(800, 450);
+    struct DATA data;
+    loadImages(&data);
+    while (notQuit) {
+        if (data.gameState == GAME_STATE_INIT) {
+            init(&data);
+        }else 
+        if (data.gameState == GAME_STATE_PLAY) {
+            play(&data);
+        }else 
+        if (data.gameState == GAME_STATE_RESULT) {
+            result(&data);
+        }
+    }
+}
+#endif
+
+#ifdef G
+//じゃんけん
+#include"framework.h"
+#include"window.h"
+#include"graphic.h"
+#include"input.h"
+#include"rand.h"
+void gmain() {
+    window(800, 450);
+    //画像読み込み
+    int playerGuImg = loadImage("playerGu.png");
+    int playerChokiImg = loadImage("playerChoki.png");
+    int playerPaImg = loadImage("playerPa.png");
+    int pcGuImg = loadImage("pcGu.png");
+    int pcChokiImg = loadImage("pcChoki.png");
+    int pcPaImg = loadImage("pcPa.png");
+    int circleImg = loadImage("circle.png");
+    int equalImg = loadImage("equal.png");
+    int circleSmallImg = loadImage("circleSmall.png");
+    //0をGU,1をCHOKI, 2をPAとする
+    const int GU = 0;
+    const int CHOKI = 1;
+    const int PA = 2;
+    //プレイヤーデータ
+    int playerImg = playerGuImg;
+    float playerPx = 225;
+    float playerPy = 225;
+    int playerHand = GU;
+    int playerWinCnt = 0;
+    //パソコンデータ
+    int pcImg = pcGuImg;
+    float pcPx = 800 - 225;
+    float pcPy = 225;
+    int pcHand = GU;
+    int pcWinCnt = 0;
+    //判定結果
+    int playerWinHand = 0;//pcの手をもとにplayerが勝つ手を書き込む
+    int resultImg = equalImg;
+    float resultPx = -200;
+    float resultPy = 225;
+    int blinkCnt = 0;
+    rectMode(CENTER);
+    while(notQuit) {
+        //試合中か試合終了か判断
+        if (playerWinCnt < 5 && pcWinCnt < 5) {
+            //試合中
+            if (isTrigger(KEY_A) || isTrigger(KEY_S) || isTrigger(KEY_D)) {
+                //プレイヤーの手を決定
+                if (isTrigger(KEY_A)) {
+                    playerImg = playerGuImg;
+                    playerHand = GU;
+                }
+                else if (isTrigger(KEY_S)) {
+                    playerImg = playerChokiImg;
+                    playerHand = CHOKI;
+                }
+                else if (isTrigger(KEY_D)) {
+                    playerImg = playerPaImg;
+                    playerHand = PA;
+                }
+                //パソコンの手を決定
+                pcHand = getRand() % 3;
+                if (pcHand == GU) {
+                    pcImg = pcGuImg;
+                    playerWinHand = PA;
+                }
+                else if (pcHand == CHOKI) {
+                    pcImg = pcChokiImg;
+                    playerWinHand = GU;
+                }
+                else if (pcHand == PA) {
+                    pcImg = pcPaImg;
+                    playerWinHand = CHOKI;
+                }
+                //結果判定
+                if (playerHand == pcHand) {
+                    resultImg = equalImg;
+                    resultPx = 400;
+                }
+                else if (playerHand == playerWinHand) {
+                    resultImg = circleImg;
+                    resultPx = playerPx;
+                    playerWinCnt++;
+                }
+                else {
+                    resultImg = circleImg;
+                    resultPx = pcPx;
+                    pcWinCnt++;
+                }
+            }
+        }
+        else {
+            //試合終了
+            blinkCnt++;
+            //もう一回
+            if (isTrigger(KEY_SPACE)) {
+                blinkCnt = 0;
+                playerWinCnt = 0;
+                pcWinCnt = 0;
+                pcImg = pcGuImg;
+                playerImg = playerGuImg;
+                resultPx = -200;
+            }
+        }
+
+        //描画
+        clear(30, 60, 120);
+        image(playerImg, playerPx, playerPy);
+        image(pcImg, pcPx, pcPy);
+        if (blinkCnt / 10 % 2 == 0) {
+            image(resultImg, resultPx, resultPy);
+        }
+        for (int i = 0; i < playerWinCnt; i++) {
+            image(circleSmallImg, playerPx - 80 + 40 * i, 100);
+        }
+        for (int i = 0; i < pcWinCnt; i++) {
+            image(circleSmallImg, pcPx - 80 + 40 * i, 100);
+        }
+        if (blinkCnt==0) {
+            text("ぐぅ→Ａ　ちょき→Ｓ　ぱぁ→Ｄ", 80, 360);
+        }
+        else {
+            text("もう一回する→スペース", 120, 360);
+        }
+    }
+}
+#endif
 
 #ifdef F
 #include"framework.h"
@@ -53,7 +448,6 @@ void gmain(){
 #include"framework.h"
 #include"window.h"
 #include"graphic.h"
-#include"mathUtil.h"
 #include"input.h"
 void gmain() {
     window(800, 800);
@@ -309,7 +703,7 @@ void gmain(){
     //四角形
     float deg = 45;
     //円
-    float x = Width / 2, y = Height / 2, r = 10, vx = 5, vy = -3;
+    //float x = Width / 2, y = Height / 2, r = 10, vx = 5, vy = -3;
     //画像
     int allImg = loadImage("obake2.png");
     int img[4][4];
@@ -327,17 +721,16 @@ void gmain(){
     int ptn = 0;
     float px = Width - 16 * 3, py = 16, rz = 0, dx = 0, dy = 3;
     int logo = loadImage("logo.png");
-    setRandSeed();
+    //setRandSeed();
     int random[5] = { 0 };
     float randomf = 0;
 
-    repeat(){
-        getInput();
+    while(notQuit){
 
-        x += vx;
-        y += vy;
-        if (x<r || x>Width - r)vx *= -1;
-        if (y<r || y>Height - r)vy *= -1;
+        //x += vx;
+        //y += vy;
+        //if (x<r || x>Width - r)vx *= -1;
+        //if (y<r || y>Height - r)vy *= -1;
 
         px += dx;
         py += dy;
@@ -372,7 +765,7 @@ void gmain(){
         //四角形
         angleMode(DEGREES);
         rectMode(CORNER);
-        fill(0,0, 127);
+        fill(0, 0, 127);
         stroke(0, 255, 255);
         strokeWeight(1);
         rect(200, 200, 200, 200, deg);
@@ -411,7 +804,7 @@ void gmain(){
         text(py, Width / 2, Height / 2);
         text(MouseX, 0, 60);
         text(MouseY, 0, 120);
-
+        //乱数テスト
         if (isTrigger(KEY_Z)) { 
             for (int i = 0; i < 5; i++) {
                 random[i] = getRandInt(9);

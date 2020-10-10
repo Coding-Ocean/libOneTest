@@ -1,4 +1,44 @@
-#define A
+#define G
+#ifdef G
+#include"framework.h"
+#include"window.h"
+#include"graphic.h"
+#include"mathUtil.h"
+#include"input.h"
+#include"let.h"
+program() {
+    window(900, 900);
+    let px = Width / 2;
+    let radius = 200;
+    let vx = 5;
+    let deg = 0;
+    while(notQuit) {
+        px += vx;
+        if (px < radius || px > Width - radius) {
+            vx *= -1;
+        }
+
+        deg += 5;
+
+        clear(200, 200, 200);
+
+        strokeWeight(2);
+
+        fill(255, 255, 255);
+        circle(px, 450, radius*2);
+
+        let mx = MouseX;
+        let my = MouseY;
+        rectMode(CENTER);
+        angleMode(DEGREES);
+        rect(mx, my, 100, 100, deg);
+
+        fill(0, 0, 0);
+        text("mx=" + mx, 0, 20);
+        text("my=" + my, 0, 40);
+    }
+}
+#endif
 
 #ifdef F
 #include"framework.h"

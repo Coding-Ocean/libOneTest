@@ -1,8 +1,39 @@
-#define I
-#ifdef I
-//じゃんけん
+#define E
+
+//昔のRPGキャラアニメーション
+#ifdef J
 #include"framework.h"
-#include"window.h"
+#include"graphic.h"
+#include"input.h"
+program() {
+    window(1600, 900);
+    int img = loadImage("pipo-halloweenchara2016_26.png");
+    int imgs[16];
+    int animCnt = 0;
+    int animIdx = 0;
+    for (int i = 0; i < 16; i++) {
+        int _i = i % 4;
+        if (_i <= 2) {
+            imgs[i] = cutImage(img, 32 * _i, 32 * (i / 4), 32, 32);
+        }
+        else {
+            imgs[i] = imgs[i - 2];
+        }
+    }
+    repeat() {
+        if (isPress(KEY_S))     animIdx = ++animCnt / 10 % 4;
+        else if (isPress(KEY_A))animIdx = ++animCnt / 10 % 4 + 4;
+        else if (isPress(KEY_D))animIdx = ++animCnt / 10 % 4 + 8;
+        else if (isPress(KEY_W))animIdx = ++animCnt / 10 % 4 + 12;
+        else animCnt = 0;
+        clear(50, 50, 50);
+        image(imgs[animIdx], Width / 2 - 16, Height / 2 - 16);
+    }
+}
+#endif
+//うんこごりら
+#ifdef I
+#include"framework.h"
 #include"graphic.h"
 #include"input.h"
 #include"rand.h"
@@ -12,7 +43,10 @@ void gmain() {
     //画像読み込み
     int goriImg = loadImage("gorilla.png");
     int unchImg = loadImage("unchi.png");
-    //
+    //モード設定
+    rectMode(CENTER);
+    angleMode(DEGREES);
+    //構造体型
     struct DATA {
         float px;
         float py;
@@ -20,10 +54,12 @@ void gmain() {
         float vy;
         int life;
     };
+    //ゴリラデータ
     struct DATA gori;
     gori.px = 960;
     gori.py = 300;
     gori.vx = 5;
+    //運固データ
     const int numUnch = 100;
     struct DATA unch[numUnch];
     for (int i = 0; i < numUnch; i++) {
@@ -32,17 +68,17 @@ void gmain() {
     }
     int triggerCnt = 0;
     int deg = 0;
-    rectMode(CENTER);
-    angleMode(DEGREES);
+    //ゲームループ
     while (notQuit) {
+        //ゴリラの動き
         if (isPress(KEY_A)) {
             gori.px -= gori.vx;
         }
         if (isPress(KEY_D)) {
             gori.px += gori.vx;
         }
-        deg += 10;
         gori.px += sin(deg);
+        deg += 10;
         //雲子発射
         if (++triggerCnt % 20 == 0) {
             for (int i = 0; i < numUnch; i++) {
@@ -75,14 +111,12 @@ void gmain() {
         }
         image(goriImg, gori.px, gori.py);
     }
-
 }
 #endif
 
+//じゃんけん 関数分割
 #ifdef H
-//じゃんけん
 #include"framework.h"
-#include"window.h"
 #include"graphic.h"
 #include"input.h"
 #include"rand.h"
@@ -267,10 +301,9 @@ void gmain() {
 }
 #endif
 
-#ifdef G
 //じゃんけん
+#ifdef G
 #include"framework.h"
-#include"window.h"
 #include"graphic.h"
 #include"input.h"
 #include"rand.h"
@@ -395,9 +428,9 @@ void gmain() {
 }
 #endif
 
+//鬼滅の命令書
 #ifdef F
 #include"framework.h"
-#include"window.h"
 #include"graphic.h"
 #include"mathUtil.h"
 #include"input.h"
@@ -444,30 +477,153 @@ void gmain(){
 }
 #endif
 
+//テスト実験用
 #ifdef E
 #include"framework.h"
-#include"window.h"
 #include"graphic.h"
 #include"input.h"
-void gmain() {
-    window(800, 800);
+#include"mathUtil.h"
+bool reflect(float vx, float vy, float rs, float* x, float* y,float* dx, float* dy) {
+    float sqlen = vx * vx + vy * vy;
+    if (sqlen >= rs * rs) {
+        return 0;
+    }
+    //当たってない位置に戻す
+    float l = sqrt(vx * vx + vy * vy);
+    vx /= l;
+    vy /= l;
+    *x += vx * (rs - l);
+    *y += vy * (rs - l);
+    //反射ベクトルを求める
+    float len = -*dx * vx + -*dy * vy;
+    float vx2 = vx * len * 2;
+    float vy2 = vy * len * 2;
+    *dx = *dx + vx2;
+    *dy = *dy + vy2;
+    return 1;
+}
+program(){
+    window(320,320);
+    //rect data : left top right bottom width height
+    float l, t, r, b, w, h;
+    w = 20;
+    h = 20;
+    l = Width/2-w/2;
+    t = Height/2-h/2;
+    //circle data : posX posY radius dirX dirY
+    float x, y, rs, dx, dy;
+    rs = 10;
+    x = rs + 10;
+    y = rs + 20;
+    dx = 3;
+    dy = 3;
+    //ブロックの角と円の中心までのベクトル
+    float vx, vy;
     repeat(){
-        clear(200, 200, 200);
-        //stroke(255, 0, 0);
-        strokeWeight(30);
-        line(50, 50, 720, 720);
-        fill(0, 200, 0);
-        rectMode(CENTER);
-        rect(200, 200, 200, 200);
-        fill(200, 200, 0);
-        circle(600, 600, 100 * 2);
+        //円移動
+        x += dx;
+        y += dy;
+        //四角形移動
+        if (isPress(KEY_A))l += -2;
+        if (isPress(KEY_D))l += 2;
+        if (isPress(KEY_W))t += -2;
+        if (isPress(KEY_S))t += 2;
+        r = l + w;
+        b = t + h;
+
+        //円とウィドウ枠との当たり判定
+        if (x < rs) {
+            x = rs;
+            dx = -dx;
+        }
+        if (x > Width - rs) {
+            x = Width - rs;
+            dx = -dx;
+        }
+        if (y < rs) {
+            y = rs;
+            dy *= -1;
+        }
+        if (y > Height - rs) {
+            y = Height - rs;
+            dy *= -1;
+        }
+        //当たり判定
+        fill(255, 255, 255);
+        if (x >= l && x <= r && y < t && y + rs > t) {
+            //↑ブロックの上辺と当たった
+            fill(255, 0, 0, 128);
+            //食い込んだ分だけ追い出す
+            y += t - (y + rs);
+            dy *= -1;
+        }
+        else if (x >= l && x <= r && y > b && y - rs < b) {
+            //↑ブロックの下辺と当たった
+            fill(255, 0, 0, 128);
+            y += b - (y - rs);
+            dy *= -1;
+        }
+        else if (x < l && x+rs > l && y >= t && y <= b) {
+            //↑ブロックの左辺と当たった
+            fill(255, 0, 0, 128);
+            x += l - (x + rs);
+            dx *= -1;
+        }
+        else if (x > r && x - rs < r && y >= t && y <= b) {
+            //↑ブロックの左辺と当たった
+            fill(255, 0, 0, 128);
+            x += r - (x - rs);
+            dx *= -1;
+        }
+        else if (x < l && y < t) {
+            //↑ブロック左上の領域にいる
+            vx = x - l;
+            vy = y - t;
+            if (reflect(vx, vy, rs, &x, &y, &dx, &dy)) {
+                //↑ブロック左上角と当たった
+                fill(0, 255, 0, 128);
+
+            }
+        }
+        else if (x < l && y > b) {
+            //↑ブロック左下の領域にいる
+            vx = x - l;
+            vy = y - b;
+            if (reflect(vx, vy, rs, &x, &y, &dx, &dy)) {
+                //↑ブロック左下角と当たった
+                fill(0, 255, 0, 128);
+            }
+        }
+        else if (x > r && y < t) {
+            //↑ブロック右上の領域にいる
+            vx = x - r;
+            vy = y - t;
+            if (reflect(vx, vy, rs, &x, &y, &dx, &dy)) {
+                //↑ブロック右上角と当たった
+                fill(0, 0, 255, 128);
+            }
+        }
+        else if (x > r && y > b) {
+            //↑ブロック右下の領域にいる
+            vx = x - r;
+            vy = y - b;
+            if (reflect(vx, vy, rs, &x, &y, &dx, &dy)) {
+                //↑ブロック右下角と当たった
+                fill(0, 0, 255, 128);
+            }
+        }
+        //fill(255, 255, 255);
+        //描画
+        clear(240, 200, 200);
+        circle(x, y, rs * 2);
+        rect(l, t, w, h);
     }
 }
 #endif
 
+//数学 座標
 #ifdef D
 #include"framework.h"
-#include"window.h"
 #include"graphic.h"
 #include"mathUtil.h"
 #include"input.h"
@@ -485,12 +641,12 @@ void gmain() {
         
         float mX = MathMouseX;
         float mY = MathMouseY;
-        fill(255, 255, 255);
-        mathCircle(mX, mY, 0.04f);
         mathLine(0, 0, mX, mY);
         mathLine(0, 0, mX, 0);
         mathLine(mX, 0, mX, mY);
         mathLine(0, mY, mX, mY);
+        fill(255, 255, 255, 128);
+        mathCircle(mX, mY, 0.2f);
         
         fill(0, 0, 0);
         text(mX, 0, 20);
@@ -502,10 +658,9 @@ void gmain() {
 
 #endif
 
-#ifdef C
 //関数グラフ
+#ifdef C
 #include"framework.h"
-#include"window.h"
 #include"graphic.h"
 #include"mathUtil.h"
 float PointStrokeWeight = 4;
@@ -619,9 +774,9 @@ program() {
 
 #endif
 
+//円と円の当たり判定
 #ifdef B
 #include"framework.h"
-#include"window.h"
 #include"graphic.h"
 class BALL {
     float x;
@@ -690,9 +845,9 @@ void gmain() {
 }
 #endif
 
+//最初のテスト
 #ifdef A
 #include"framework.h"
-#include"window.h"
 #include"graphic.h"
 #include"input.h"
 #include"mathUtil.h"
@@ -805,12 +960,14 @@ void gmain(){
         text(MouseX, 0, 60);
         text(MouseY, 0, 120);
         //乱数テスト
+        // 取得
         if (isTrigger(KEY_Z)) { 
             for (int i = 0; i < 5; i++) {
                 random[i] = getRandInt(9);
             }
             randomf = getRandFloat(-5,5);
         }
+        // 表示
         for (int i = 0; i < 5; i++) {
             text(random[i], 30.0f*i, 240.0f);
         }

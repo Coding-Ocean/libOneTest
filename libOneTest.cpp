@@ -1,4 +1,131 @@
-#define E
+#define M
+#ifdef M
+#include"framework.h"
+#include"graphic.h"
+#include"input.h"
+#include"mathUtil.h"
+void cube(float x, float y) {
+    float sx, sy, ex, ey, sr, r,radius=80;
+    angleMode(DEGREES);
+    sr = 90;
+    sx = x + cos(sr) * radius;
+    sy = y + sin(sr) * radius;
+    for (int i = 0; i < 6; i++) {
+        r = sr + 60 * (i + 1);
+        ex = x + cos(r) * radius;
+        ey = y + sin(r) * radius;
+        line(sx, sy, ex, ey);
+        sx = ex;
+        sy = ey;
+    }
+    for (int i = 0; i < 3; i++) {
+        r = sr + 120 * i;
+        ex = x + cos(r) * radius;
+        ey = y + sin(r) * radius;
+        line(x, y, ex, ey);
+    }
+}
+void gmain() {
+    window(1600, 900, 1);
+    clear(200, 200, 200);
+    while (notQuit) {
+        for (int j = 0; j < 8; j++) {
+            for (int i = 0; i < 12; i++) {
+                float x = 68.8f*(j%2)+68.8f*2 * i;
+                float y = 120*j;
+                cube(x, y);
+            }
+        }
+    }
+}
+#endif
+//
+#ifdef L
+#include"framework.h"
+#include"graphic.h"
+#include"input.h"
+//#include"mathUtil.h"
+void gmain() {
+    window(1600, 900,1);
+    int imgs[2];
+    imgs[0] = loadImage("cube0.png");
+    imgs[1] = loadImage("cube1.png");
+    float r = 0;
+    while (notQuit) {
+        clear(0, 0, 0);
+        for (int j = 0; j < 8; j++) {
+            for (int i = 0; i < 12; i++) {
+                float x = -70 * (j % 2) + 140 * i;
+                float y = -40 + 120 * j;
+                int idx = ((j + 1) / 2 + i) % 2;
+                image(imgs[idx],  x, y, r);
+            }
+        }
+        //r += 0.001f;
+    }
+}
+#endif
+//
+#ifdef K
+#include"framework.h"
+#include"graphic.h"
+#include"input.h"
+#include"mathUtil.h"
+void cube(float x, float y) {
+    //６角形
+    float sr = 3.141592f / 2;//start radian
+    float sx = x+cos(sr);
+    float sy = y+sin(sr);
+    float r = 3.141592f / 3;
+    float ex, ey = 0;
+    for (int i = 0; i < 6; i++) {
+        ex = x+cos(sr + r * (i + 1));
+        ey = y+sin(sr + r * (i + 1));
+        mathLine(sx, sy, ex, ey);
+        sx = ex;
+        sy = ey;
+    }
+    sr = 3.141592f / 6;
+    r = 3.141592f / 3 * 2;
+    for (int i = 0; i < 3; i++) {
+        ex = x+cos(sr + r * (i + 1));
+        ey = y+sin(sr + r * (i + 1));
+        mathLine(x, y, ex, ey);
+    }
+}
+void gmain() {
+    window(800, 800);
+    while (notQuit) {
+        getInput();
+        clear(255, 255, 255);
+        //軸表示
+        mathAxis(5.1f);
+        float x = cos(3.141592f / 6) * 2;
+        float y = sin(3.141592f / 6) + 1;
+        for (int j = 0; j < 7; j++) {
+            for (int i = 0; i < 7; i++) {
+                if (((j+1)/2+i) % 2 == 0) {
+                    //stroke(255, 255, 0);
+                }
+                else {
+                    //stroke(0, 255, 0);
+                }
+                strokeWeight(2);
+                stroke(0, 0, 0);
+                if (j % 2 == 0) {
+                    cube(x * i, y * j);
+                }
+                else {
+                    cube(0.86f + x * i, y * j);//startPx=1+cos(30)
+                }
+            }
+        }
+
+    }
+}
+
+
+#endif
 
 //昔のRPGキャラアニメーション
 #ifdef J

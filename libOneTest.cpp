@@ -1,12 +1,12 @@
-#define M
-#ifdef M
+#define K
+//鬼滅テスト
+#ifdef N
 #include"framework.h"
 #include"graphic.h"
 #include"input.h"
 #include"mathUtil.h"
-void cube(float x, float y) {
-    float sx, sy, ex, ey, sr, r,radius=80;
-    angleMode(DEGREES);
+void cube(float x, float y, float radius) {
+    float sx, sy, ex, ey, sr, r;
     sr = 90;
     sx = x + cos(sr) * radius;
     sy = y + sin(sr) * radius;
@@ -26,107 +26,369 @@ void cube(float x, float y) {
     }
 }
 void gmain() {
-    window(1600, 900, 1);
-    clear(200, 200, 200);
+    float radius = 90;
+    angleMode(DEGREES);
+    float lx = radius * cos(30);
+    float ly = radius * sin(30);
+    int nx = 12;
+    int ny = 8;
+    window((nx-1)*2*lx+lx, (ny-1)*3*ly+ly);
+    clear(220, 220, 220);
     while (notQuit) {
-        for (int j = 0; j < 8; j++) {
-            for (int i = 0; i < 12; i++) {
-                float x = 68.8f*(j%2)+68.8f*2 * i;
-                float y = 120*j;
-                cube(x, y);
+        for (int j = 0; j < ny; j++) {
+            for (int i = 0; i < nx; i++) {
+                float x = lx * (j % 2) + lx * 2 * i;
+                float y = ly + ly * 3 * j;
+                cube(x, y, radius);
             }
         }
     }
 }
 #endif
-//
+//鬼滅・画像
+#ifdef M
+#include"framework.h"
+#include"graphic.h"
+void gmain() {
+    //画像cube１面のひし形の対角線の半分の長さlx,ly
+    //cubeの１辺の長さは80
+    float lx = 69.28203f;//80*cos(30)
+    float ly = 40;//80*sin(30)
+    //ずらしながら描画していくときの距離
+    float w = lx * 2;
+    float h = ly * 3;
+    //cubeがぴったり収まるような大きさのウィンドウにする
+    int numX = 14;
+    int numY = 9;
+    window(
+        int((numX - 1) * w + lx), 
+        int((numY - 1) * h + ly)
+    );
+    //画像読み込み
+    int imgs[2];
+    imgs[0] = loadImage("cube0.png");
+    imgs[1] = loadImage("cube1.png");
+    //矩形描画モード
+    rectMode(CENTER);
+    clear(0, 0, 0);
+    for (int j = 0; j < numY; j++) {
+        for (int i = 0; i < numX; i++) {
+            float x = (j % 2 * lx) + w * i;
+            float y = ly + h * j;
+            int idx = (j / 2 + i) % 2;
+            image(imgs[idx], x, y);
+        }
+    }
+
+    //float x, y, left, top;
+    //int idx;
+    //top = ly;
+    //for (int j = 0; j < numY; j++) {
+    //    y = top + h * j;
+    //    left = lx * (j % 2);//奇数行は右にずらす
+    //    for (int i = 0; i < numX; i++) {
+    //        x = left + w * i;
+    //        idx = (j / 2 + i) % 2;
+    //        image(imgs[idx], x, y);
+    //    }
+    //}
+    pause();
+}
+#endif
+//鬼滅・カスタムシェイプ
 #ifdef L
 #include"framework.h"
 #include"graphic.h"
 #include"input.h"
-//#include"mathUtil.h"
-void gmain() {
-    window(1600, 900,1);
-    int imgs[2];
-    imgs[0] = loadImage("cube0.png");
-    imgs[1] = loadImage("cube1.png");
-    float r = 0;
-    while (notQuit) {
-        clear(0, 0, 0);
-        for (int j = 0; j < 8; j++) {
-            for (int i = 0; i < 12; i++) {
-                float x = -70 * (j % 2) + 140 * i;
-                float y = -40 + 120 * j;
-                int idx = ((j + 1) / 2 + i) % 2;
-                image(imgs[idx],  x, y, r);
+#include"mathUtil.h"
+#include"VECTOR3.h"
+/*
+正三角形ベースのcubeに見えるような図形を並べて描画する
+*/
+struct CUBE {
+    //cubeの辺の長さ
+    float len;
+    //ひし形の対角線の半分の長さ
+    float lx, ly;
+    int idx;
+    //cubeとcubeの間隔
+    float distX, distY;
+    //縦横に並べる数
+    int nx, ny;
+    //windowの大きさ
+    float width, height;
+    void initData() {
+        //cubeの辺の長さ
+        len = 100;
+        //ひし形の対角線の半分の長さ
+        float rad = 3.141592f / 6;
+        lx = len * cos(rad);
+        ly = len * sin(rad);
+        //cubeとcubeの間隔
+        distX = lx * 2;
+        distY = ly * 3;
+        //縦横に並べる数
+        nx = 11;
+        ny = 7;
+        //windowの大きさ
+        width = (nx - 1) * distX + lx;
+        height = (ny - 1) * distY + ly;
+    }
+    void createDiamondShape() {
+        //ひし形をつくる
+        VECTOR3 vertices[] = {
+            VECTOR3(0,0,0),
+            VECTOR3(lx,-ly,0),
+            VECTOR3(0,-len,0),
+            VECTOR3(-lx,-ly,0),
+        };
+        WORD indices[] = {
+            0,1,2,
+            2,3,0
+        };
+        idx = createShape(
+            vertices, sizeof(vertices) / sizeof(VECTOR3),
+            indices, sizeof(indices) / sizeof(WORD)
+        );
+    }
+    void draw(float x, float y, int colType) {
+        //ひし形を120度ずつ回転描画してcubeに見せる
+        float rad = 3.141592f * 2 / 3;
+        if (colType == 0)fill(255, 190, 0);
+        else fill(0, 120, 0);
+        shape(idx, x, y, 0.0f, 1);
+        if (colType == 0)fill(0, 190, 0);
+        else fill(255, 120, 0);
+        shape(idx, x, y, rad * 4, 1);
+        if (colType == 0)fill(0, 150, 0);
+        else fill(255, 80, 0);
+        shape(idx, x, y, -rad * 4, 1);
+    }
+    void drawAll() {
+        strokeWeight(2);
+        for (int j = 0; j < ny; j++) {
+            for (int i = 0; i < nx; i++) {
+                float x = (j % 2 * lx) + distX * i;
+                float y = ly + distY * j;
+                int colType = (j / 2 + i) % 2;
+                draw(x, y, colType);
             }
         }
-        //r += 0.001f;
+    }
+
+};
+void gmain() {
+    struct CUBE cube;
+    cube.initData();
+    window(cube.width, cube.height);
+    cube.createDiamondShape();
+    while (notQuit) {
+        clear(220, 220, 220);
+        cube.draw(Width / 2, Height / 2, 1);
+        //cube.drawAll();
     }
 }
 #endif
-//
+//カスタムシェイプ
 #ifdef K
 #include"framework.h"
 #include"graphic.h"
 #include"input.h"
 #include"mathUtil.h"
-void cube(float x, float y) {
-    //６角形
-    float sr = 3.141592f / 2;//start radian
-    float sx = x+cos(sr);
-    float sy = y+sin(sr);
-    float r = 3.141592f / 3;
-    float ex, ey = 0;
+int createDiamondShape() {
+    //ひし形の辺の長さ
+    float len = 1;
+    //ひし形の対角線の半分の長さ
+    float rad = 3.141592f / 3;
+    float lx = len * cos(rad);
+    float ly = len * sin(rad);
+    //ひし形をつくる
+    float vertices[] = {
+        0,ly,
+        lx,0,
+        0,-ly,
+        -lx,0,
+    };
+    int indices[] = {
+        0,1,2,
+        2,3,0
+    };
+    return createShape(
+        vertices, sizeof(vertices) / sizeof(float) / 2,
+        indices, sizeof(indices) / sizeof(int)
+    );
+}
+/*
+int createStarShape() {
+    //☆
+    VECTOR3 vertices[10];
+    float r = 3.141592f / 5;
+    for (int i = 0; i < 10; i++) {
+        float radius = 0.5f + 0.5f * (1 - i % 2);
+        vertices[i].x = sin(r * i) * radius;
+        vertices[i].y = -cos(r * i) * radius;
+    }
+    WORD indices[] = {
+        0,9,1,
+        2,1,3,
+        4,3,5,
+        6,5,7,
+        8,7,9,
+        1,9,3,
+        9,5,3,
+        9,7,5
+    };
+    return createShape(
+        vertices, sizeof(vertices) / sizeof(VECTOR3),
+        indices, sizeof(indices) / sizeof(WORD)
+    );
+}
+*/
+int createStarShape() {
+    //☆
+    const int n = 10;
+    float vertices[n*2];
+    float r = 3.141592f / 5;
+    for (int i = 0; i < n; i++) {
+        float radius = 0.4f + 0.4f * (1 - i % 2);
+        int x = i * 2;
+        int y = x + 1;
+        vertices[x] = sin(r * i) * radius;
+        vertices[y] = -cos(r * i) * radius;
+    }
+    int indices[] = {
+        0,9,1,
+        2,1,3,
+        4,3,5,
+        6,5,7,
+        8,7,9,
+        1,9,3,
+        9,5,3,
+        9,7,5
+    };
+    return createShape(
+        vertices, sizeof(vertices)/ sizeof(float) / 2,
+        indices, sizeof(indices) / sizeof(int)
+    );
+}
+int createCapsuleShape() {
+    const int n = 24;
+    float vertices[n * 2];
+    float r = 3.141592f / (n / 2 - 1);
+    float radius = 0.5f;
+    //上の半円
+    float h = -0.25f;
+    for (int i = 0; i < n / 2; i++) {
+        int x = i * 2, y = i * 2 + 1;
+        vertices[x] = cos(r * i) * radius;
+        vertices[y] = h + -sin(r * i) * radius;
+    }
+    //下の半円
+    h = -h;
+    for (int i = n / 2; i < n; i++) {
+        int x = i * 2, y = i * 2 + 1;
+        vertices[x] = cos(r * (i - 1)) * radius;
+        vertices[y] = h + -sin(r * (i - 1)) * radius;
+    }
+    int indices[(n - 2) * 3];
+    for (int i = 0; i < (n - 2); i++) {
+        indices[i * 3 + 0] = 0;
+        indices[i * 3 + 1] = i + 1;
+        indices[i * 3 + 2] = i + 2;
+    }
+    return createShape(
+        vertices, sizeof(vertices) / sizeof(float) / 2,
+        indices, sizeof(indices) / sizeof(int)
+    );
+}
+int createOnigiriShape() {
+    const int n = 24;
+    float vertices[n * 2];
+    float r = 3.141592f / (n / 2 - 1);
+    float ofsRad = 3.141592f / 6;
+    float radius = 0.5f;
+    float vl = 0.2f;
+    //上の丸角
+    float vx = -sin(0)*vl;
+    float vy = -cos(0)*vl;
+    for (int i = 0; i < n / 3; i++) {
+        int x = i * 2, y = i * 2 + 1;
+        vertices[x] = vx + cos(ofsRad + r * i) * radius;
+        vertices[y] = vy + -sin(ofsRad + r * i) * radius;
+    }
+    //左下の丸角
+    vx = -sin(3.141592f / 3 * 2)*vl;
+    vy = -cos(3.141592f / 3 * 2)*vl;
+    for (int i = n / 3; i < n/3*2; i++) {
+        int x = i * 2, y = i * 2 + 1;
+        vertices[x] = vx + cos(ofsRad + r * (i-1)) * radius;
+        vertices[y] = vy + -sin(ofsRad + r * (i-1)) * radius;
+    }
+    //右下の丸角
+    vx = -sin(3.141592f / 3 * 4)*vl;
+    vy = -cos(3.141592f / 3 * 4)*vl;
+    for (int i = n / 3*2; i < n; i++) {
+        int x = i * 2, y = i * 2 + 1;
+        vertices[x] = vx + cos(ofsRad + r * (i-1)) * radius;
+        vertices[y] = vy + -sin(ofsRad + r * (i-1)) * radius;
+    }
+    //インデックス
+    int indices[(n - 2) * 3];
+    for (int i = 0; i < (n - 2); i++) {
+        indices[i * 3 + 0] = 0;
+        indices[i * 3 + 1] = i + 1;
+        indices[i * 3 + 2] = i + 2;
+    }
+    return createShape(
+        vertices, sizeof(vertices) / sizeof(float) / 2,
+        indices, sizeof(indices) / sizeof(int)
+    );
+}
+void diamond(int shapeIdx, float rad, float size){
+    fill(255, 100, 255);
+    stroke(128, 128, 128);
+    strokeWeight(1);
     for (int i = 0; i < 6; i++) {
-        ex = x+cos(sr + r * (i + 1));
-        ey = y+sin(sr + r * (i + 1));
-        mathLine(sx, sy, ex, ey);
-        sx = ex;
-        sy = ey;
-    }
-    sr = 3.141592f / 6;
-    r = 3.141592f / 3 * 2;
-    for (int i = 0; i < 3; i++) {
-        ex = x+cos(sr + r * (i + 1));
-        ey = y+sin(sr + r * (i + 1));
-        mathLine(x, y, ex, ey);
+        shape(shapeIdx, Width / 5 * i, Height / 5, rad, size);
     }
 }
+void star(int shapeIdx, float rad, float size){
+    fill(255, 255, 100);
+    for (int i = 0; i < 6; i++) {
+        shape(shapeIdx, Width / 5 * i, Height / 5 * 2, -rad, size);
+    }
+}
+void capsule(int shapeIdx, float rad, float size){
+    fill(100, 255, 100);
+    for (int i = 0; i < 6; i++) {
+        shape(shapeIdx, Width / 5 * i, Height / 5 * 3, rad, size);
+    }
+}
+void onigiri(int shapeIdx, float rad, float size){
+    fill(100, 255, 255);
+    for (int i = 0; i < 6; i++) {
+        shape(shapeIdx, Width / 5 * i, Height / 5 * 4, -rad, size);
+    }
+}
+
 void gmain() {
-    window(800, 800);
+    window(30*16, 30*9);
+    int diamondIdx  = createDiamondShape();
+    int starIdx     = createStarShape();
+    int capsuleIdx  = createCapsuleShape();
+    int onigiriIdx  = createOnigiriShape();
+    float rad = 0;
+    float size = 10;
     while (notQuit) {
-        getInput();
-        clear(255, 255, 255);
-        //軸表示
-        mathAxis(5.1f);
-        float x = cos(3.141592f / 6) * 2;
-        float y = sin(3.141592f / 6) + 1;
-        for (int j = 0; j < 7; j++) {
-            for (int i = 0; i < 7; i++) {
-                if (((j+1)/2+i) % 2 == 0) {
-                    //stroke(255, 255, 0);
-                }
-                else {
-                    //stroke(0, 255, 0);
-                }
-                strokeWeight(2);
-                stroke(0, 0, 0);
-                if (j % 2 == 0) {
-                    cube(x * i, y * j);
-                }
-                else {
-                    cube(0.86f + x * i, y * j);//startPx=1+cos(30)
-                }
-            }
-        }
-
+        rad += 0.01f;
+        clear(220, 240, 220);
+        diamond(diamondIdx, rad, size);
+        star(starIdx, rad, size);
+        capsule(capsuleIdx, rad, size);
+        onigiri(onigiriIdx, rad, size);
     }
 }
-
-
 #endif
-
 //昔のRPGキャラアニメーション
 #ifdef J
 #include"framework.h"
@@ -240,7 +502,6 @@ void gmain() {
     }
 }
 #endif
-
 //じゃんけん 関数分割
 #ifdef H
 #include"framework.h"
@@ -255,7 +516,7 @@ const int CHOKI = 1;
 const int PA = 2;
 struct DATA {
     int gameState = GAME_STATE_INIT;
-    //画像読み込み
+    //画像番号
     int playerGuImg = 0;
     int playerChokiImg = 0;
     int playerPaImg = 0;
@@ -427,7 +688,6 @@ void gmain() {
     }
 }
 #endif
-
 //じゃんけん
 #ifdef G
 #include"framework.h"
@@ -554,7 +814,6 @@ void gmain() {
     }
 }
 #endif
-
 //鬼滅の命令書
 #ifdef F
 #include"framework.h"
@@ -603,7 +862,6 @@ void gmain(){
     }
 }
 #endif
-
 //テスト実験用
 #ifdef E
 #include"framework.h"
@@ -747,22 +1005,22 @@ program(){
     }
 }
 #endif
-
 //数学 座標
 #ifdef D
 #include"framework.h"
 #include"graphic.h"
 #include"mathUtil.h"
 #include"input.h"
+#include"var.h"
 void gmain() {
     window(800, 800);
     while (notQuit) {
         getInput();
 
-        clear(50, 50, 50);
-        
-        fill(220, 200, 200);
-        rect(0, 0, Width, Height);
+        clear(220, 220, 220);
+        //clear(50, 50, 50);
+        //fill(220, 200, 200);
+        //rect(0, 0, Width, Height);
         
         mathAxis(1.1f);
         
@@ -776,15 +1034,14 @@ void gmain() {
         mathCircle(mX, mY, 0.2f);
         
         fill(0, 0, 0);
-        text(mX, 0, 20);
-        text(mY, 100, 20);
-        text(sqrt(mX * mX + mY * mY), 200, 20);
+        text("x:"+(var)mX, 0, 20);
+        text("y:"+(var)mY, 0, 40);
+        text("l:"+(var)sqrt(mX * mX + mY * mY), 0, 60);
     }
 }
 
 
 #endif
-
 //関数グラフ
 #ifdef C
 #include"framework.h"
@@ -793,7 +1050,7 @@ void gmain() {
 float PointStrokeWeight = 4;
 float LineStrokeWeight = 2;
 float f(float x) {
-    return x;
+    return x*x;
 }
 void regularPolygon(int num) {
     angleMode(RADIANS);
@@ -897,10 +1154,7 @@ program() {
         animation();
     }
 }
-
-
 #endif
-
 //円と円の当たり判定
 #ifdef B
 #include"framework.h"
@@ -971,7 +1225,6 @@ void gmain() {
     delete b;
 }
 #endif
-
 //最初のテスト
 #ifdef A
 #include"framework.h"

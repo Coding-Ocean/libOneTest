@@ -1,4 +1,82 @@
 #define K
+//サムネ用プログラム
+#ifdef O
+#include"framework.h"
+#include"graphic.h"
+#include"mathUtil.h"
+void background() {
+    //画像cube１面のひし形の対角線の半分の長さlx,ly
+    //cubeの１辺の長さは80
+    float lx = 69.28203f;//80*cos(30)
+    float ly = 40;//80*sin(30)
+    //ずらしながら描画していくときの距離
+    float dx = lx * 2;
+    float dy = ly * 3;
+    //縦横に並べる個数
+    int ny = 10;
+    int nx = 15;
+    //画像読み込み
+    int imgs[2];
+    imgs[0] = loadImage("cube0.png");
+    imgs[1] = loadImage("cube1.png");
+    //矩形描画モード
+    rectMode(CENTER);
+    clear(0, 0, 0);
+    for (int j = 0; j < ny; j++) {
+        for (int i = 0; i < nx; i++) {
+            float x = (j % 2 * lx) + dx * i;
+            float y = ly + dy * j;
+            int idx = (j / 2 + i) % 2;
+            image(imgs[idx], x, y);
+        }
+    }
+}
+void title() {
+    //文字列
+    font("UD デジタル 教科書体 NP-B");
+    textSize(160);
+    const char* str1 = "ゲームプログラミング講座";
+    const char* str2 = "　　スタートします！";
+    const char* str3 = "「#0 イントロダクション」";
+    //文字位置
+    float x = 120;
+    float y = 300;
+    float y2 = 200;
+    float y3 = 500;
+    //輪郭 contour
+    float cx = 0;//ずらすベクトルｘ
+    float cy = 0;//ずらすベクトルｙ
+    float cw = 10;//ずらす量
+    int n = 16;
+    angleMode(DEGREES);
+    float deg = 360.0f / n;
+    for (int i = 0; i < n + 1; i++) {
+        if (i < n) {
+            //輪郭
+            fill(20, 20, 20);
+            cx = cos(deg * i) * cw;
+            cy = sin(deg * i) * cw;
+            text(str1, x + cx, y + cy);
+            text(str2, x + cx, y + y2 + cy);
+            text(str3, x + cx, y + y3 + cy);
+        }
+        else {
+            //本体
+            fill(255, 255, 255);
+            text(str1, x, y);
+            text(str2, x, y + y2);
+            text(str3, x, y + y3);
+        }
+    }
+}
+void gmain() {
+    window(1920, 1080, 1);
+    clear(250, 250, 125);
+    background();
+    title();
+    pause();
+}
+#endif
 //鬼滅テスト
 #ifdef N
 #include"framework.h"
@@ -80,18 +158,6 @@ void gmain() {
         }
     }
 
-    //float x, y, left, top;
-    //int idx;
-    //top = ly;
-    //for (int j = 0; j < numY; j++) {
-    //    y = top + h * j;
-    //    left = lx * (j % 2);//奇数行は右にずらす
-    //    for (int i = 0; i < numX; i++) {
-    //        x = left + w * i;
-    //        idx = (j / 2 + i) % 2;
-    //        image(imgs[idx], x, y);
-    //    }
-    //}
     pause();
 }
 #endif
@@ -110,20 +176,23 @@ struct CUBE {
     float len;
     //ひし形の対角線の半分の長さ
     float lx, ly;
-    int idx;
+    //
+    int shapeIdx;
     //cubeとcubeの間隔
     float distX, distY;
     //縦横に並べる数
     int nx, ny;
     //windowの大きさ
-    float width, height;
-    void initData() {
-        //cubeの辺の長さ
+    float winW, winH;
+    CUBE() {
+        angleMode(DEGREES);
+        //ひし形の辺の長さ
         len = 100;
         //ひし形の対角線の半分の長さ
-        float rad = 3.141592f / 6;
-        lx = len * cos(rad);
-        ly = len * sin(rad);
+        lx = len * cos(30);
+        ly = len * sin(30);
+        //
+        shapeIdx = 0;
         //cubeとcubeの間隔
         distX = lx * 2;
         distY = ly * 3;
@@ -131,38 +200,37 @@ struct CUBE {
         nx = 11;
         ny = 7;
         //windowの大きさ
-        width = (nx - 1) * distX + lx;
-        height = (ny - 1) * distY + ly;
+        winW = (nx - 1) * distX + lx;
+        winH = (ny - 1) * distY + ly;
     }
     void createDiamondShape() {
         //ひし形をつくる
-        VECTOR3 vertices[] = {
-            VECTOR3(0,0,0),
-            VECTOR3(lx,-ly,0),
-            VECTOR3(0,-len,0),
-            VECTOR3(-lx,-ly,0),
+        float vertices[] = {
+            0, 0,
+            lx,-ly,
+            0,-len,
+            -lx,-ly,
         };
-        WORD indices[] = {
+        int indices[] = {
             0,1,2,
             2,3,0
         };
-        idx = createShape(
-            vertices, sizeof(vertices) / sizeof(VECTOR3),
-            indices, sizeof(indices) / sizeof(WORD)
+        shapeIdx = createShape(
+            vertices, sizeof(vertices) / sizeof(float) / 2,
+            indices, sizeof(indices) / sizeof(int)
         );
     }
     void draw(float x, float y, int colType) {
         //ひし形を120度ずつ回転描画してcubeに見せる
-        float rad = 3.141592f * 2 / 3;
         if (colType == 0)fill(255, 190, 0);
         else fill(0, 120, 0);
-        shape(idx, x, y, 0.0f, 1);
+        shape(shapeIdx, x, y, 0, 1);
         if (colType == 0)fill(0, 190, 0);
         else fill(255, 120, 0);
-        shape(idx, x, y, rad * 4, 1);
+        shape(shapeIdx, x, y, 120, 1);
         if (colType == 0)fill(0, 150, 0);
         else fill(255, 80, 0);
-        shape(idx, x, y, -rad * 4, 1);
+        shape(shapeIdx, x, y, -120, 1);
     }
     void drawAll() {
         strokeWeight(2);
@@ -175,17 +243,15 @@ struct CUBE {
             }
         }
     }
-
 };
 void gmain() {
     struct CUBE cube;
-    cube.initData();
-    window(cube.width, cube.height);
+    window(cube.winW, cube.winH);
     cube.createDiamondShape();
     while (notQuit) {
         clear(220, 220, 220);
-        cube.draw(Width / 2, Height / 2, 1);
-        //cube.drawAll();
+        //cube.draw(Width / 2, Height / 2, 1);
+        cube.drawAll();
     }
 }
 #endif
@@ -199,15 +265,16 @@ int createDiamondShape() {
     //ひし形の辺の長さ
     float len = 1;
     //ひし形の対角線の半分の長さ
-    float rad = 3.141592f / 3;
-    float lx = len * cos(rad);
-    float ly = len * sin(rad);
+    angleMode(DEGREES);
+    float deg = 60;
+    float lx = len * cos(deg);
+    float ly = len * sin(deg);
     //ひし形をつくる
     float vertices[] = {
-        0,ly,
-        lx,0,
-        0,-ly,
-        -lx,0,
+        0, ly,
+        lx, 0,
+        0, -ly,
+        -lx, 0,
     };
     int indices[] = {
         0,1,2,
@@ -218,43 +285,18 @@ int createDiamondShape() {
         indices, sizeof(indices) / sizeof(int)
     );
 }
-/*
-int createStarShape() {
-    //☆
-    VECTOR3 vertices[10];
-    float r = 3.141592f / 5;
-    for (int i = 0; i < 10; i++) {
-        float radius = 0.5f + 0.5f * (1 - i % 2);
-        vertices[i].x = sin(r * i) * radius;
-        vertices[i].y = -cos(r * i) * radius;
-    }
-    WORD indices[] = {
-        0,9,1,
-        2,1,3,
-        4,3,5,
-        6,5,7,
-        8,7,9,
-        1,9,3,
-        9,5,3,
-        9,7,5
-    };
-    return createShape(
-        vertices, sizeof(vertices) / sizeof(VECTOR3),
-        indices, sizeof(indices) / sizeof(WORD)
-    );
-}
-*/
 int createStarShape() {
     //☆
     const int n = 10;
     float vertices[n*2];
-    float r = 3.141592f / 5;
+    angleMode(DEGREES);
+    float deg = 180.0f / 5;
     for (int i = 0; i < n; i++) {
         float radius = 0.4f + 0.4f * (1 - i % 2);
         int x = i * 2;
         int y = x + 1;
-        vertices[x] = sin(r * i) * radius;
-        vertices[y] = -cos(r * i) * radius;
+        vertices[x] = sin(deg * i) * radius;
+        vertices[y] = -cos(deg * i) * radius;
     }
     int indices[] = {
         0,9,1,
@@ -272,65 +314,29 @@ int createStarShape() {
     );
 }
 int createCapsuleShape() {
-    const int n = 24;
+    //分割する角度
+    angleMode(DEGREES);
+    const int divDeg = 10;
+    const int n = (180 / divDeg + 1) * 2;
     float vertices[n * 2];
-    float r = 3.141592f / (n / 2 - 1);
     float radius = 0.5f;
     //上の半円
-    float h = -0.25f;
+    float vy = -0.1f;
     for (int i = 0; i < n / 2; i++) {
-        int x = i * 2, y = i * 2 + 1;
-        vertices[x] = cos(r * i) * radius;
-        vertices[y] = h + -sin(r * i) * radius;
+        int x = i * 2;
+        int y = x + 1;
+        float deg = (float)divDeg * i;
+        vertices[x] = cos(deg) * radius;
+        vertices[y] = vy + -sin(deg) * radius;
     }
     //下の半円
-    h = -h;
+    vy = -vy;
     for (int i = n / 2; i < n; i++) {
-        int x = i * 2, y = i * 2 + 1;
-        vertices[x] = cos(r * (i - 1)) * radius;
-        vertices[y] = h + -sin(r * (i - 1)) * radius;
-    }
-    int indices[(n - 2) * 3];
-    for (int i = 0; i < (n - 2); i++) {
-        indices[i * 3 + 0] = 0;
-        indices[i * 3 + 1] = i + 1;
-        indices[i * 3 + 2] = i + 2;
-    }
-    return createShape(
-        vertices, sizeof(vertices) / sizeof(float) / 2,
-        indices, sizeof(indices) / sizeof(int)
-    );
-}
-int createOnigiriShape() {
-    const int n = 24;
-    float vertices[n * 2];
-    float r = 3.141592f / (n / 2 - 1);
-    float ofsRad = 3.141592f / 6;
-    float radius = 0.5f;
-    float vl = 0.2f;
-    //上の丸角
-    float vx = -sin(0)*vl;
-    float vy = -cos(0)*vl;
-    for (int i = 0; i < n / 3; i++) {
-        int x = i * 2, y = i * 2 + 1;
-        vertices[x] = vx + cos(ofsRad + r * i) * radius;
-        vertices[y] = vy + -sin(ofsRad + r * i) * radius;
-    }
-    //左下の丸角
-    vx = -sin(3.141592f / 3 * 2)*vl;
-    vy = -cos(3.141592f / 3 * 2)*vl;
-    for (int i = n / 3; i < n/3*2; i++) {
-        int x = i * 2, y = i * 2 + 1;
-        vertices[x] = vx + cos(ofsRad + r * (i-1)) * radius;
-        vertices[y] = vy + -sin(ofsRad + r * (i-1)) * radius;
-    }
-    //右下の丸角
-    vx = -sin(3.141592f / 3 * 4)*vl;
-    vy = -cos(3.141592f / 3 * 4)*vl;
-    for (int i = n / 3*2; i < n; i++) {
-        int x = i * 2, y = i * 2 + 1;
-        vertices[x] = vx + cos(ofsRad + r * (i-1)) * radius;
-        vertices[y] = vy + -sin(ofsRad + r * (i-1)) * radius;
+        int x = i * 2;
+        int y = x + 1;
+        float deg = (float)divDeg * (i-1);
+        vertices[x] = cos(deg) * radius;
+        vertices[y] = vy + -sin(deg) * radius;
     }
     //インデックス
     int indices[(n - 2) * 3];
@@ -344,48 +350,219 @@ int createOnigiriShape() {
         indices, sizeof(indices) / sizeof(int)
     );
 }
-void diamond(int shapeIdx, float rad, float size){
-    fill(255, 100, 255);
-    stroke(128, 128, 128);
-    strokeWeight(1);
-    for (int i = 0; i < 6; i++) {
-        shape(shapeIdx, Width / 5 * i, Height / 5, rad, size);
+int createOnigiriShape() {
+    angleMode(DEGREES);
+    //分割する角度
+    const int divDeg = 10;
+    //頂点数
+    const int n = (120/divDeg+1)*3;
+    float vertices[n * 2];
+    float offsetDeg = 30;
+    float radius = 0.5f;
+    float vl = 0.1f;
+    //
+    for (int i = 0; i < n; i++) {
+        int w = i / (n / 3);
+        float vx = -sin(120.0f * w) * vl;
+        float vy = -cos(120.0f * w) * vl;
+        int x = i * 2;
+        int y = x + 1;
+        float deg = offsetDeg + divDeg * (i-w);
+        vertices[x] = vx + cos(deg) * radius;
+        vertices[y] = vy + -sin(deg) * radius;
     }
+    /*
+    //上の丸角
+    float vx = -sin(0)*vl;
+    float vy = -cos(0)*vl;
+    for (int i = 0; i < n / 3; i++) {
+        int x = i * 2;
+        int y = x + 1;
+        float deg = offsetDeg + divDeg * i;
+        vertices[x] = vx + cos(deg) * radius;
+        vertices[y] = vy + -sin(deg) * radius;
+    }
+    //左下の丸角
+    vx = -sin(120)*vl;
+    vy = -cos(120)*vl;
+    for (int i = n / 3; i < n / 3 * 2; i++) {
+        int x = i * 2;
+        int y = x + 1;
+        float deg = offsetDeg + divDeg * (i - 1);
+        vertices[x] = vx + cos(deg) * radius;
+        vertices[y] = vy + -sin(deg) * radius;
+    }
+    //右下の丸角
+    vx = -sin(240)*vl;
+    vy = -cos(240)*vl;
+    for (int i = n / 3 * 2; i < n; i++) {
+        int x = i * 2;
+        int y = x + 1;
+        float deg = offsetDeg + divDeg * (i - 2);
+        vertices[x] = vx + cos(deg) * radius;
+        vertices[y] = vy + -sin(deg) * radius;
+    }
+    */
+    //インデックス
+    int indices[(n - 2) * 3];
+    for (int i = 0; i < (n - 2); i++) {
+        indices[i * 3 + 0] = 0;
+        indices[i * 3 + 1] = i + 1;
+        indices[i * 3 + 2] = i + 2;
+    }
+    return createShape(
+        vertices, sizeof(vertices) / sizeof(float) / 2,
+        indices, sizeof(indices) / sizeof(int)
+    );
 }
-void star(int shapeIdx, float rad, float size){
-    fill(255, 255, 100);
-    for (int i = 0; i < 6; i++) {
-        shape(shapeIdx, Width / 5 * i, Height / 5 * 2, -rad, size);
+int createKakumaruShape() {
+    angleMode(DEGREES);
+    //分割する角度
+    const int divDeg = 10;
+    //頂点数
+    const int n = (90 / divDeg + 1) * 4;
+    float vertices[n * 2];
+    //半径
+    float radius = 0.3f;
+    //中心から離す距離
+    float vl = 0.3f;
+
+    for (int i = 0; i < n; i++) {
+        int w = i / (n / 4);
+        float vx = cos(45.0f+90*w) * vl;
+        float vy = -sin(45.0f+90*w) * vl;
+        int x = i * 2;
+        int y = x + 1;
+        float deg = (float)divDeg * (i-w);
+        vertices[x] = vx + cos(deg) * radius;
+        vertices[y] = vy + -sin(deg) * radius;
     }
+
+    /*
+    //右上の丸角
+    float vx = cos(45) * vl;
+    float vy = -sin(45) * vl;
+    for (int i = 0; i < n / 4; i++) {
+        int x = i * 2;
+        int y = x + 1;
+        float deg = (float)divDeg * i;
+        vertices[x] = vx + cos(deg) * radius;
+        vertices[y] = vy + -sin(deg) * radius;
+    }
+    //左上の丸角
+    vx = cos(135) * vl;
+    vy = -sin(135) * vl;
+    for (int i = n / 4; i < n / 4 * 2; i++) {
+        int x = i * 2;
+        int y = x + 1;
+        float deg = (float)divDeg * (i - 1);
+        vertices[x] = vx + cos(deg) * radius;
+        vertices[y] = vy + -sin(deg) * radius;
+    }
+    //左下の丸角
+    vx = cos(225) * vl;
+    vy = -sin(225) * vl;
+    for (int i = n / 4 * 2; i < n / 4 * 3; i++) {
+        int x = i * 2;
+        int y = x + 1;
+        float deg = (float)divDeg * (i - 2);
+        vertices[x] = vx + cos(deg) * radius;
+        vertices[y] = vy + -sin(deg) * radius;
+    }
+    //左下の丸角
+    vx = cos(315) * vl;
+    vy = -sin(315) * vl;
+    for (int i = n / 4 * 3; i < n; i++) {
+        int debug = i / (n / 4);
+        int x = i * 2;
+        int y = x + 1;
+        float deg = (float)divDeg * (i - 3);
+        vertices[x] = vx + cos(deg) * radius;
+        vertices[y] = vy + -sin(deg) * radius;
+    }
+*/
+    //インデックス
+    int indices[(n - 2) * 3];
+    for (int i = 0; i < (n - 2); i++) {
+        indices[i * 3 + 0] = 0;
+        indices[i * 3 + 1] = i + 1;
+        indices[i * 3 + 2] = i + 2;
+    }
+    return createShape(
+        vertices, sizeof(vertices) / sizeof(float) / 2,
+        indices, sizeof(indices) / sizeof(int)
+    );
 }
-void capsule(int shapeIdx, float rad, float size){
-    fill(100, 255, 100);
-    for (int i = 0; i < 6; i++) {
-        shape(shapeIdx, Width / 5 * i, Height / 5 * 3, rad, size);
+int createHeartShape() {
+    angleMode(DEGREES);
+    const int divDeg = 5;
+    const int n = 360 / divDeg;
+    float vertices[n * 2];
+    float scale = 1.0f/24;
+    for (int i = 0; i < n; i++) {
+        int x = i * 2;
+        int y = x + 1;
+        float deg = (float)divDeg * i;
+        vertices[x] = 
+            16 * scale * pow(sin(deg), 3);
+        vertices[y] =
+            -13 * scale * cos(deg)
+            + 5 * scale * cos(2 * deg)
+            + 2 * scale * cos(3 * deg)
+            + 1 * scale * cos(4 * deg);
     }
-}
-void onigiri(int shapeIdx, float rad, float size){
-    fill(100, 255, 255);
-    for (int i = 0; i < 6; i++) {
-        shape(shapeIdx, Width / 5 * i, Height / 5 * 4, -rad, size);
+    //インデックス
+    int indices[(n - 2) * 3];
+    for (int i = 0; i < (n - 2); i++) {
+        indices[i * 3 + 0] = 0;
+        indices[i * 3 + 1] = i + 1;
+        indices[i * 3 + 2] = i + 2;
     }
+    return createShape(
+        vertices, sizeof(vertices) / sizeof(float) / 2,
+        indices, sizeof(indices) / sizeof(int)
+    );
 }
 
 void gmain() {
-    window(30*16, 30*9);
-    int diamondIdx  = createDiamondShape();
-    int starIdx     = createStarShape();
-    int capsuleIdx  = createCapsuleShape();
-    int onigiriIdx  = createOnigiriShape();
+    window(1600, 900);
+    const int n = 6;
+    int shapes[n];
+    shapes[0] = createCapsuleShape();
+    shapes[1] = createDiamondShape();
+    shapes[2] = createOnigiriShape();
+    shapes[3] = createStarShape();
+    shapes[4] = createKakumaruShape();
+    shapes[5] = createHeartShape();
+    COLOR colors[n];
+    colors[0] = COLOR(255, 187, 187);
+    colors[1] = COLOR(170, 221, 221);
+    colors[2] = COLOR(153, 221, 255);
+    colors[3] = COLOR(255, 255, 187);
+    colors[4] = COLOR(221, 238, 170);
+    colors[5] = COLOR(255, 187, 221);
     float rad = 0;
-    float size = 10;
+    float size = 120;
+    int nx = 6;
+    int ny = 1;
+    float dx = Width / nx;
+    float dy = Height / ny;
+    angleMode(RADIANS);
+    stroke(100, 100, 100);
+    strokeWeight(1);
     while (notQuit) {
         rad += 0.01f;
-        clear(220, 240, 220);
-        diamond(diamondIdx, rad, size);
-        star(starIdx, rad, size);
-        capsule(capsuleIdx, rad, size);
-        onigiri(onigiriIdx, rad, size);
+        clear(255, 221, 238);
+        for (int j = 0; j < ny; j++) {
+            for (int i = 0; i < nx; i++) {
+                int idx = (j + i) % n;
+                float x = dx / 2 + dx * i;
+                float y = dy / 2 + dy * j;
+                int dirRot = 1 - idx % 2 * 2;
+                fill(colors[idx]);
+                shape(shapes[idx], x, y, rad*dirRot, size);
+            }
+        }
     }
 }
 #endif

@@ -1,83 +1,65 @@
-//------------------------------------------------------------
-#define O
-//------------------------------------------------------------
-//
-#ifdef S
-#include"libOne.h"
-void gmain() {
-    window(1600, 900);
-    float x, y, r;
-    x = width / 2;
-    y = height / 2;
-    r = 120;
-    while (notQuit) {
-        clear(100);
-        
-        float a, b, c;
-        a = x - mouseX;
-        b = y - mouseY;
-        c = sqrt(a * a + b * b);
-        fill(255);
-        text(c, 0, 20);
+#define R
 
-        if (c < r)fill(255, 0, 0 );
-        else      fill(255);
-        strokeWeight(1);
-        circle(x, y, r * 2);
-        strokeWeight(4);
-        line(mouseX, mouseY, x, y);
-        line(mouseX, mouseY, x, mouseY);
-        line(x, y, x, mouseY);
-    }
-}
-#endif
-//MATRIX
+
+//三角関数
 #ifdef R
 #include"framework.h"
 #include"graphic.h"
 #include"input.h"
-#include"MATRIX.h"
-int createCustomShape() {
-    angleMode(DEGREES);
-    SHAPE_VERTEX vertices[] = {
-        0,0,
-        -0.2f,-0.5f,
-        0,-1.0f,
-        0.2f,-0.5f
+#include"mathUtil.h"
+#include"MAT.h"
+//正三角形
+int createEquilateral() {
+    SHAPE_VERTEX v[] = {
+        -sin(0),-cos(0),
+        -sin(120),-cos(120),
+        -sin(240),-cos(240)
     };
-    int num = sizeof(vertices) / sizeof(SHAPE_VERTEX);
-    return createShape(vertices, num);
+    return createShape(v, 3);
 }
 void gmain() {
     window(900, 900);
-    float cx = Width / 2;
-    float cy = Height / 2;
-    int idx = createCustomShape();
-    float angle = 0;
-    while(notQuit) {
-        angle += 1;
+    float cx = width / 2;
+    float cy = height / 2;
+    angleMode(DEGREES);
+    int sh = createEquilateral();
+    float x = 0, y = 0, diameter = 50;
+    float radius=450, angle = 0;
+    repeat() {
+        if (isPress(KEY_SPACE))angle += 1;
+        else angle = 0;
+        x = cx + radius * sin(angle);
+        y = cy + radius * -cos(angle);
         clear(220, 220, 220);
-        MATRIX m0,m0s, m1, m1s, m2, m2s;
-        m0.mulTranslate(cx+ 100 * sin(angle), cy);
-        m0.mulRotateZ(45*sin(angle));
-        m0s.mulScale(100, 100);
-        shape(idx, m0 * m0s);
-        m1.mulTranslate(0, -100);
-        m1.mulRotateZ(45 * sin(angle));
-        m1s.mulScale(100, 100);
-        shape(idx, m0 * m1 * m1s);
-        m2.mulTranslate(0, -100);
-        m2.mulRotateZ(45 * sin(angle));
-        m2s.mulScale(100, 100);
-        shape(idx, m0 * m1 * m2 * m2s);
+        //line(cx, cy, x, y);
+        //strokeWeight(2);
+        //shape(sh, x, y, angle, 5);
+        rectMode(CENTER);
+        rect(x, y, 20, 20,angle);
+        static float angl = 0;
+        MAT m1,m2;
+        m1.identity();
+        m1.mulTranslate(width / 2, height / 2);
+        m1.mulRotateZ(angl);
+        m1.mulTranslate(100,0);
+
+        m2.identity();
+        m2.mulRotateZ(angl*2);
+        m2.mulScale(100, 100);
+
+        m1 = m1 * m2;
+
+        angl += 1;
+        shape(sh, m1);
     }
 }
 #endif
-//シューティング
+//自機
 #ifdef P
 #include"framework.h"
 #include"graphic.h"
 #include"input.h"
+#include"mathUtil.h"
 struct PLAYER_SHIP {
     int idx;
     float px, py, angle, size, vx, vy, rotSpeed, advSpeed;
@@ -96,19 +78,22 @@ void init(struct PLAYER_SHIP& ps) {
     ps.px = Width / 2;
     ps.py = Height / 2;
     ps.angle = 0;
-    ps.size = 60;
+    ps.size = 30;
     ps.vx = 0;
     ps.vy = 0;
     ps.rotSpeed = 2;
     ps.advSpeed = 4;
 }
 void move(struct PLAYER_SHIP& ps) {
+    /*
     if (isPress(KEY_A)) {
         ps.angle += -ps.rotSpeed;
     }
     if (isPress(KEY_D)) {
         ps.angle += ps.rotSpeed;
     }
+    ps.vx = 0;
+    ps.vy = 0;
     if (isPress(KEY_W)) {
         ps.vx = sin(ps.angle);
         ps.vy = -cos(ps.angle);
@@ -116,15 +101,16 @@ void move(struct PLAYER_SHIP& ps) {
         ps.py += ps.vy * ps.advSpeed;
     }
     if (isPress(KEY_S)) {
-        ps.vx = sin(ps.angle);
-        ps.vy = -cos(ps.angle);
-        ps.px -= ps.vx * ps.advSpeed;
-        ps.py -= ps.vy * ps.advSpeed;
+        ps.vx = -sin(ps.angle);
+        ps.vy = cos(ps.angle);
+        ps.px += ps.vx * ps.advSpeed;
+        ps.py += ps.vy * ps.advSpeed;
     }
     if (ps.py < -ps.size)ps.py = Height + ps.size;
     if (ps.py > Height + ps.size)ps.py = -ps.size;
     if (ps.px < -ps.size)ps.px = Width + ps.size;
     if (ps.px > Width + ps.size)ps.px = -ps.size;
+    */
 }
 void draw(struct PLAYER_SHIP& ps) {
     stroke(200, 200, 200);
@@ -136,12 +122,10 @@ struct PLAYER_BULLET {
     float px, py, angle, size, vx, vy, rotSpeed, advSpeed;
     int life;
     static int triggerCnt;
-    static int triggerInterval;
     static int shapeIdx;
     static const int num;
 };
 int PLAYER_BULLET::triggerCnt = 0;
-int PLAYER_BULLET::triggerInterval = 0;
 int PLAYER_BULLET::shapeIdx = 0;
 const int PLAYER_BULLET::num = 20;
 int createStarShape() {
@@ -162,16 +146,15 @@ int createStarShape() {
 void init(struct PLAYER_BULLET* pb) {
     pb->shapeIdx = createStarShape();
     pb->triggerCnt = -1;
-    pb->triggerInterval = 5;
     for (int i = 0; i < pb->num; i++) {
-        pb[i].size = 25;
-        pb[i].advSpeed = 10;
+        pb[i].size = 10;
+        pb[i].advSpeed = 6;
         pb[i].life = 0;
     }
 }
 void launch(struct PLAYER_BULLET* pb, float px, float py, float angle) {
     if (isPress(KEY_SPACE)) {
-        if (++pb->triggerCnt % pb->triggerInterval == 0) {
+        if (++pb->triggerCnt % 10 == 0) {
             for (int i = 0; i < pb->num; i++) {
                 if (pb[i].life == 0) {
                     pb[i].angle = angle;
@@ -212,7 +195,7 @@ void draw(struct PLAYER_BULLET* pb) {
 }
 
 void gmain() {
-    window(1600, 900);
+    window(800, 450);
     angleMode(DEGREES);
     struct PLAYER_SHIP playerShip;
     struct PLAYER_BULLET playerBullets[PLAYER_BULLET::num];
@@ -226,15 +209,23 @@ void gmain() {
         stroke(200, 200, 200);
         line(0, Height / 2, Width, Height / 2);
         line(Width / 2, 0, Width / 2, Height);
+        static float angle = 0;
+        ps.px = Width / 2 + sin(angle) * 100;
+        ps.py = Height / 2 + cos(angle) * 100;
+        if (isPress(KEY_C))angle += 2;
+        else angle = 0;
+
         draw(playerBullets);
         draw(playerShip);
     }
 }
 #endif
+
 //サムネ用プログラム
 #ifdef O
 #include"framework.h"
 #include"graphic.h"
+#include"mathUtil.h"
 void background() {
     //画像cube１面のひし形の対角線の半分の長さlx,ly
     //cubeの１辺の長さは80
@@ -253,7 +244,6 @@ void background() {
     //矩形描画モード
     rectMode(CENTER);
     clear(0, 0, 0);
-    meshColor(200);
     for (int j = 0; j < ny; j++) {
         for (int i = 0; i < nx; i++) {
             float x = (j % 2 * lx) + dx * i;
@@ -266,19 +256,14 @@ void background() {
 void title() {
     //文字列
     font("UD デジタル 教科書体 NP-B");
-    int size[] = { 
-        200, 
-        260, 
-        100 
-    };
-    const char* str[] = {
-    "ゲームつくろ",
-    "　鬼滅の命令書２",
-    "" };
+    textSize(160);
+    const char* str1 = "ゲームプログラミング講座";
+    const char* str2 = "　　スタートします！";
+    const char* str3 = "「#0 イントロダクション」";
     //文字位置
-    float x = 20;
+    float x = 120;
     float y = 300;
-    float y2 = 350;
+    float y2 = 200;
     float y3 = 500;
     //輪郭 contour
     float cx = 0;//ずらすベクトルｘ
@@ -287,30 +272,28 @@ void title() {
     int n = 16;
     angleMode(DEGREES);
     float deg = 360.0f / n;
-    for (int j = 0; j < 3; j++) {
-        for (int i = 0; i < n + 1; i++) {
-            if (i < n) {
-                //輪郭
-                fill(20);
-                cx = cos(deg * i) * cw;
-                cy = sin(deg * i) * cw;
-                text(str1, x + cx, y + cy);
-                text(str2, x + cx, y + y2 + cy);
-                text(str3, x + cx, y + y3 + cy);
-            }
-            else {
-                //本体
-                fill(255);
-                text(str1, x, y);
-                text(str2, x, y + y2);
-                text(str3, x, y + y3);
-            }
+    for (int i = 0; i < n + 1; i++) {
+        if (i < n) {
+            //輪郭
+            fill(20, 20, 20);
+            cx = cos(deg * i) * cw;
+            cy = sin(deg * i) * cw;
+            text(str1, x + cx, y + cy);
+            text(str2, x + cx, y + y2 + cy);
+            text(str3, x + cx, y + y3 + cy);
+        }
+        else {
+            //本体
+            fill(255, 255, 255);
+            text(str1, x, y);
+            text(str2, x, y + y2);
+            text(str3, x, y + y3);
         }
     }
 }
 void gmain() {
     window(1920, 1080, 1);
-    clear(220, 220, 125);
+    clear(250, 250, 125);
     background();
     title();
     pause();
@@ -489,7 +472,11 @@ void gmain() {
 #endif
 //カスタムシェイプ
 #ifdef K
-#include"libOne.h"
+#include"framework.h"
+#include"graphic.h"
+#include"input.h"
+#include"mathUtil.h"
+#include"VECTOR2.h"
 //----------------------------------------------------------------------
 // シェープの輪郭となる頂点位置を一筆書きとなるようにプログラムしていく
 // 最初の頂点からトライアングルファンで塗りつぶせるように考慮する必要がある
@@ -754,7 +741,6 @@ void gmain() {
     };
     int nx = level[state].nx;
     int ny = level[state].ny;
-    float degree = 0;
     while (notQuit) {
         switch (state) {
         case STATE::LEVEL1:
@@ -820,8 +806,7 @@ void gmain() {
             deg = 0;
         }
         //描画
-        clear(hsv_to_rgb(degree,50));
-        degree += 0.1f;
+        clear(255, 221, 238);
         for (int j = 0; j < ny; j++) {
             for (int i = 0; i < nx; i++) {
                 int idx = (j + i) % n;
@@ -862,7 +847,7 @@ program() {
         else if (isPress(KEY_W))animIdx = ++animCnt / 10 % 4 + 12;
         else animCnt = 0;
         clear(50, 50, 50);
-        image(imgs[animIdx], Width / 2 - 16, Height / 2 - 16, 0, 1);
+        image(imgs[animIdx], Width / 2 - 16, Height / 2 - 16);
     }
 }
 #endif
@@ -1453,32 +1438,36 @@ program(){
 #endif
 //数学 座標
 #ifdef D
-#include"libOne.h"
+#include"framework.h"
+#include"graphic.h"
+#include"mathUtil.h"
+#include"input.h"
+#include"var.h"
 void gmain() {
-    window(1000, 1000);
-    angleMode(DEGREES);
-    let a = 5;
+    window(800, 800);
     while (notQuit) {
-        let x = cos(a);
-        let y = sin(a);
-        let l = sqrt(x * x + y * y);
-        clear(200, 200, 200);
-        fill(0, 0, 0);
-        textSize(60);
-        text(a, 0, 60);
-        text("cos(a):" + x, 0, 120);
-        text("sin(a):" + y, 0, 180);
-        text("length:" + l, 0, 240);
+        getInput();
 
-        mathAxis(1.1f);
-        strokeWeight(4);
-        mathLine(0, 0, x, y);
-        strokeWeight(2);
-        mathLine(x, 0, x, y);
-        mathLine(0, y, x, y);
-        fill(255, 255, 255, 128);
-        mathCircle(x, y, 0.05f);
+        clear(220, 220, 220);
+        //clear(50, 50, 50);
+        //fill(220, 200, 200);
+        //rect(0, 0, Width, Height);
         
+        mathAxis(1.1f);
+        
+        float mX = MathMouseX;
+        float mY = MathMouseY;
+        mathLine(0, 0, mX, mY);
+        mathLine(0, 0, mX, 0);
+        mathLine(mX, 0, mX, mY);
+        mathLine(0, mY, mX, mY);
+        fill(255, 255, 255, 128);
+        mathCircle(mX, mY, 0.2f);
+        
+        fill(0, 0, 0);
+        text("x:"+(var)mX, 0, 20);
+        text("y:"+(var)mY, 0, 40);
+        text("l:"+(var)sqrt(mX * mX + mY * mY), 0, 60);
     }
 }
 
@@ -1488,6 +1477,7 @@ void gmain() {
 #ifdef C
 #include"framework.h"
 #include"graphic.h"
+#include"mathUtil.h"
 float PointStrokeWeight = 4;
 float LineStrokeWeight = 2;
 float f(float x) {
@@ -1668,13 +1658,18 @@ void gmain() {
 #endif
 //最初のテスト
 #ifdef A
-#include"libOne.h"
+#include"framework.h"
+#include"graphic.h"
+#include"input.h"
+#include"mathUtil.h"
+#include"rand.h"
+#include"var.h"
 void gmain(){
     window(1600, 900, full);
     //四角形
     float deg = 45;
     //円
-    //float x = width / 2, y = height / 2, r = 10, vx = 5, vy = -3;
+    //float x = Width / 2, y = Height / 2, r = 10, vx = 5, vy = -3;
     //画像
     int allImg = loadImage("obake2.png");
     int img[4][4];
@@ -1690,23 +1685,23 @@ void gmain(){
     }
     int ac = 0;
     int ptn = 0;
-    float px = width - 16 * 3, py = 16, rz = 0, dx = 0, dy = 3;
+    float px = Width - 16 * 3, py = 16, rz = 0, dx = 0, dy = 3;
     int logo = loadImage("logo.png");
-    int randomi[5] = { 0 };
+    //setRandSeed();
+    int random[5] = { 0 };
     float randomf = 0;
-    COLOR c = COLOR(random());
-    c.a = 255;
+
     while(notQuit){
 
         //x += vx;
         //y += vy;
-        //if (x<r || x>width - r)vx *= -1;
-        //if (y<r || y>height - r)vy *= -1;
+        //if (x<r || x>Width - r)vx *= -1;
+        //if (y<r || y>Height - r)vy *= -1;
 
         px += dx;
         py += dy;
-        if (py > height - 16 * 3) {
-            py = height - 16 * 3;
+        if (py > Height - 16 * 3) {
+            py = Height - 16 * 3;
             dx = -3;
             dy = 0;
             ptn = 1;
@@ -1723,31 +1718,31 @@ void gmain(){
             dy = 0;
             ptn = 2;
         }
-        if (px > width - 16 * 3) {
-            px = width - 16 * 3;
+        if (px > Width - 16 * 3) {
+            px = Width - 16 * 3;
             dx = 0;
             dy = 3;
             ptn = 0;
         }
-        //px = width/2;
-        //py = height/2;
+        //px = Width/2;
+        //py = Height/2;
 
         clear(50, 50, 50);
         //四角形
         angleMode(DEGREES);
         rectMode(CORNER);
-        fill(c);
+        fill(0, 0, 127);
         stroke(0, 255, 255);
         strokeWeight(1);
-        rect(500, 200, 200, 200, deg);
+        rect(200, 200, 200, 200, deg);
         //円
         fill(255, 255, 255);
         stroke(0, 200, 0);
         strokeWeight(20);
-        circle(mouseX, mouseY, 100.0f * 2);
+        circle(MouseX, MouseY, 100.0f * 2);
         fill(0, 0, 0);
         textSize(80);
-        text("制御文", mouseX-120, mouseY+40);
+        text("制御文", MouseX-120, MouseY+40);
         //線分１
         strokeWeight(9);
         stroke(255, 255, 0);
@@ -1759,35 +1754,35 @@ void gmain(){
         //画像
         angleMode(RADIANS);
         rectMode(CENTER);
-        image(logo, width-220, height-180);
+        image(logo, Width-220, Height-180);
         int itvl = 6;//interval
         for (int j = 0; j < 2; j++) {
             for (int i = 0; i < 2; i++) {
                 image(img[ptn][ac / itvl % 4], px + i * 32, py + j * 32, rz);
             }
         }
-        rz += -0.01f;
+        //rz += -0.01f;
         ++ac %= itvl * 4;
         //テキスト
         fill(220, 220, 220);
         textSize(60);
-        text(px, width / 2 - 150, height / 2);
-        text(py, width / 2, height / 2);
-        text(mouseX, 0, 60);
-        text(mouseY, 0, 120);
+        text(px, Width / 2 - 150, Height / 2);
+        text(py, Width / 2, Height / 2);
+        text(MouseX, 0, 60);
+        text(MouseY, 0, 120);
         //乱数テスト
         // 取得
         if (isTrigger(KEY_Z)) { 
             for (int i = 0; i < 5; i++) {
-                randomi[i] = random()%100;
+                random[i] = getRandInt(9);
             }
-            randomf = random(5.0f);
+            randomf = getRandFloat(-5,5);
         }
         // 表示
         for (int i = 0; i < 5; i++) {
-            text(randomi[i], 80.0f*i, 240.0f);
+            text(random[i], 30.0f*i, 240.0f);
         }
-        text("実数="+(let)randomf, 0, 300);
+        text("実数="+(var)randomf, 0, 300);
     }
 }
 #endif

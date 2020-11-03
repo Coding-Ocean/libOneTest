@@ -1,13 +1,12 @@
 #define R
 
-
 //éOäpä÷êî
 #ifdef R
 #include"framework.h"
 #include"graphic.h"
 #include"input.h"
 #include"mathUtil.h"
-#include"MAT.h"
+#include"MATRIX.h"
 //ê≥éOäpå`
 int createEquilateral() {
     SHAPE_VERTEX v[] = {
@@ -37,7 +36,7 @@ void gmain() {
         rectMode(CENTER);
         rect(x, y, 20, 20,angle);
         static float angl = 0;
-        MAT m1,m2;
+        MATRIX m1,m2;
         m1.identity();
         m1.mulTranslate(width / 2, height / 2);
         m1.mulRotateZ(angl);

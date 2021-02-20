@@ -1,5 +1,76 @@
-#define R
+#define S
+//let test 
+#ifdef S
+#include"libOne.h"
+let Img[2], Cols, Rows;
+void load() {
+    Img[0] = loadImage("cube0.png");
+    Img[1] = loadImage("cube1.png");
+}
+void init() {
+    Cols = width / 140 + 1;
+    Rows = height / 120 + 1;
+}
+void draw() {
+    //ぎゆうパターン画像を配置
+    rectMode(CENTER);
+    imageColor(64);
+    for (let j = 0; j < Rows; ++j) {
+        for (let i = 0; i < Cols; ++i) {
+            image(Img[(j / 2 + i) % 2],
+                70 * (j % 2) + 140 * i,
+                20 + 120 * j
+            );
+        }
+    }
+}
 
+void title() {
+    let txt = "さらちゃん";
+    let size = width/(txt.length()/2);
+    //左右上下中央に表示
+    let px = (width - size/2 * txt.length()) / 2;
+    let py = (height - size) / 2;
+    textSize(size);
+    textMode(TOP);
+    text(txt, px, py);
+}
+
+void letTest() {
+    //font("きろ字");
+    let x, y, ans[5], size, line, ofs;
+    ofs = 0;
+    size = 100;
+    line = 1;
+    x = 24;
+    y = 7;
+    ans[0] = x + y;
+    ans[1] = x - y;
+    ans[2] = x * y;
+    ans[3] = x / y;
+    ans[4] = x % y;
+    let op[5] = { " + "," - "," * ", " / "," % " };
+    let str;
+    str = " = ";
+    clear(0, 40, 0);
+    textSize(size);
+    text("x = " + x + " y = " + y, ofs, ofs + size * line++);
+    for (int i = 0; i < 5; ++i) {
+        text(x + op[i] + y + str + ans[i], ofs, ofs + size * line++);
+    }
+}
+
+void gmain() {
+    window(1920, 1080, full);
+    //load();
+    //init();
+    while(notQuit) {
+        //draw();
+        //title();
+        letTest();
+    }
+}
+#endif
 //三角関数
 #ifdef R
 #include"framework.h"
@@ -219,7 +290,6 @@ void gmain() {
     }
 }
 #endif
-
 //サムネ用プログラム
 #ifdef O
 #include"framework.h"

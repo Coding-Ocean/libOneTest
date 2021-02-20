@@ -25,6 +25,8 @@
     </ResourceCompile>
   </ItemGroup>
   <ItemGroup>
-    <None Include="cpp.hint" />
+    <None Include="cpp.hint">
+      <Filter>リソース ファイル</Filter>
+    </None>
   </ItemGroup>
 </Project>
